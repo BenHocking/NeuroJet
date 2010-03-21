@@ -16,7 +16,9 @@
 class Population {
 public:
    Population(unsigned int f, unsigned int l, NeuronType& nType):
-      m_firstNeuron(f), m_lastNeuron(l), m_neuronType(&nType) {
+     m_firstNeuron(f), m_lastNeuron(l), m_neuronType(&nType),
+     // If the neuron type changes its force external behavior, this won't update
+     m_forceExt(nType.forceExt()) {
       m_feedbackInterneurons.push_back(*(new Interneuron()));
       m_feedforwardInterneurons.push_back(*(new Interneuron()));
    };
@@ -53,7 +55,8 @@ public:
          it->calcExcitation(afferentFirings, m_firstNeuron, m_lastNeuron);
       }
    }
-   bool forceExt() const { return m_neuronType->forceExt(); }
+  //   bool forceExt() const { return m_neuronType->forceExt(); }
+   bool forceExt() const { return m_forceExt; } // Surprisingly, profiling showed this to be significant
    float getFeedbackInhibition() const;
    float getFeedforwardInhibition() const;
    unsigned int getFirstNeuron() const { return m_firstNeuron; }
@@ -207,6 +210,7 @@ private:
    InterneuronVec m_feedbackInterneurons_dup;
    InterneuronVec m_feedforwardInterneurons_dup;
    NeuronType* m_neuronType;
+   bool m_forceExt;
 };
 
 typedef std::vector<Population>::const_iterator PopulationCIt;

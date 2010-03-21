@@ -37,7 +37,7 @@ XBLD=build.xcode
 xcode:
 	rm -rf $(XBLD)
 	mkdir $(XBLD)
-	(cd $(XBLD); cmake -G"Xcode" ..)
+	(cd $(XBLD); cmake -G"Xcode" ..; open NeuroJet.xcodeproj)
 
 xcode2: 
 	if [ ! -d $(BLD) ]; then $(MAKE) compile; fi

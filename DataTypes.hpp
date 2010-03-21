@@ -18,6 +18,10 @@ enum DataListType { DLT_unknown, DLT_sequence, DLT_matrix, DLT_analysis, DLT_fil
 const float verySmallFloat = 0.00000001f;
 const float almostOne = 0.99999999f;
 
+// Creates an empty string in a way that should be compiler independent.
+// See http://www.newartisans.com/2009/10/a-c-gotcha-on-snow-leopard.html
+const std::string EMPTYSTR = std::string(0, '\0');
+
 template<class T>
 inline void updateMax(T &max, const T chk) {
    if (chk > max)
@@ -65,10 +69,11 @@ typedef UIPtnSequence::iterator UIPtnSequenceIt;
 typedef UIPtnSequence::const_iterator UIPtnSequenceCIt;
 
 typedef std::pair<std::string, bool> ArgType;
+const ArgType EMPTYARG(EMPTYSTR, false);
 typedef std::vector<ArgType> ArgListType;
 typedef ArgListType::iterator ArgListTypeIt;
 typedef ArgListType::const_iterator ArgListTypeCIt;
-inline ArgListType StrToArgListType(std::string fromString) {
+inline ArgListType StrToArgListType(const std::string& fromString) {
    return ArgListType(1, ArgType(fromString, false));
 }
 

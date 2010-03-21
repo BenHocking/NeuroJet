@@ -20,10 +20,11 @@ enum ThresholdType { TT_Undef, TT_Simple, TT_E, TT_Log, TT_Rational };
 
 class NeuronType {
 public:
-   NeuronType(): m_isExc(true), m_isInhDiv(false), m_thresholdType(TT_Simple), m_name("") {};
+   NeuronType(const std::string& name = "default")
+     : m_synapseType(name), m_isExc(true), m_isInhDiv(false), m_thresholdType(TT_Simple), m_name(name) {};
    NeuronType(const NeuronType& n);
-   NeuronType(bool isExc, bool isInhDiv, const ThresholdType thresholdType, const std::string& name):
-      m_isExc(isExc), m_isInhDiv(isInhDiv), m_thresholdType(thresholdType), m_name(name) {};
+   NeuronType(bool isExc, bool isInhDiv, const ThresholdType thresholdType, const std::string& name)
+     : m_synapseType(name), m_isExc(isExc), m_isInhDiv(isInhDiv), m_thresholdType(thresholdType), m_name(name) {};
    NeuronType& operator=(const NeuronType& n);
    void convolveFilters();
    bool forceExt() const;

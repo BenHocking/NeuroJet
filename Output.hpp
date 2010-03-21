@@ -20,13 +20,17 @@ using std::ostream;
 using std::string;
 using std::ostringstream;
 
+#   if !defined(DATATYPES_HPP)
+#      include "DataTypes.hpp"
+#   endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // Some script parsing functions
 ////////////////////////////////////////////////////////////////////////////////
 
 class StackNode {
 public:
-   StackNode(): m_str(""), m_line(0), m_next(NULL) {};
+   StackNode(): m_str(EMPTYSTR), m_line(0), m_next(NULL) {};
    StackNode(const string& curData, unsigned int curLine):
       m_str(curData), m_line(curLine), m_next(NULL) {};
    ~StackNode() { if (m_next != NULL) delete m_next; };
@@ -65,7 +69,7 @@ public:
    };
    static string getLocation() {
       if (ms_curScriptState) return ms_curScriptState->desc();
-      return "";
+      return EMPTYSTR;
    };
    static StackNode * getStackTop() { return ms_curScriptState->m_StackTop; }
    static void setCurLine(unsigned int curLine) {

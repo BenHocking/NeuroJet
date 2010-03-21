@@ -210,7 +210,7 @@ string GetVar(ArgListType &arg) { //CARET_FUN0
       exit(EXIT_FAILURE);
    }
    // never get here
-   return "";
+   return EMPTYSTR;
 }
 
 /**************************************************************/
@@ -232,7 +232,7 @@ string If(ArgListType &arg) { //CARET_FUN
          "'then' and 'else' default to 1 and 0 respectively." << std::endl;
       exit(EXIT_FAILURE);
    }
-   string TempResult = "";
+   string TempResult = EMPTYSTR;
    unsigned int i;
    for (i = 0; i < num; i++) {
       if (arg[i].first == "then") {
@@ -304,7 +304,7 @@ void BuildCalcNodeList(CalcNode * &CurrentNode, const ArgListType &arg) {
             } else if (MathChars.find(ch) != string::npos) {
             CurrentNode->str = ch;
          } else {
-            string TempStr = "";
+            string TempStr = EMPTYSTR;
             while ((j < curArg.size()) &&
                     ((((ch=='-') || (ch=='+')) && (j > 1) && (curArg[j-1] == 'e'))
                       || (TokenChars.find(ch) == string::npos))) {
@@ -313,7 +313,7 @@ void BuildCalcNodeList(CalcNode * &CurrentNode, const ArgListType &arg) {
 
                ch = curArg[j];
             }
-            if (TempStr != "") {
+            if (TempStr != EMPTYSTR) {
                CurrentNode->str = TempStr;
             }
             j--; // so that token character can be handled next time

@@ -321,7 +321,7 @@ inline string rtrim(string const& source, char const* delims = " \t\r\n") {
 }
 
 inline string ucase(const string &s) {
-  string toReturn;
+  string toReturn(EMPTYSTR);
   transform(s.begin(), s.end(), back_inserter(toReturn), ptr_fun<int, int>(toupper));
   return toReturn;
 }
@@ -405,7 +405,7 @@ inline void addToStrVec(vector<string>& container, const string& s, int begin, i
 // brackets.
 inline vector<string> tokenize(const string &s, const char token,
                                const string &groups) {
-   vector<string> toReturn;
+   vector<string> toReturn(0, EMPTYSTR);
    const unsigned int numGrps = groups.size() / 2;
    vector<int> grpCnt = vector<int>(numGrps, 0);
    const string combo = groups + token;
@@ -493,7 +493,7 @@ inline void memcheck(const void * test, const string str = "Out of memory");
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-inline bool setTValue(ArgListType &argv, const string Flag, T &Value,
+inline bool setTValue(ArgListType &argv, const string& Flag, T &Value,
                      const bool IsDeault, const T Deault) {
    // Find an argument that matches the flag, but that hasn't already been found
    ArgListTypeIt thing1 = find(argv.begin(), argv.end(), ArgType(Flag, false));
@@ -515,7 +515,7 @@ inline bool setTValue(ArgListType &argv, const string Flag, T &Value,
 }
 
 template<typename T>
-string setListValue(ArgListType &argv, const string Flag,
+string setListValue(ArgListType &argv, const string& Flag,
                  vector<T> &Value, const bool IsDeault, const vector<T> Deault) {
    // Find an argument that matches the flag, but that hasn't already been found
    ArgListTypeIt flagpos = find(argv.begin(), argv.end(), ArgType(Flag, false));
@@ -555,7 +555,7 @@ string setListValue(ArgListType &argv, const string Flag,
 #endif
       }
    }
-   return ""; // No errMsg
+   return EMPTYSTR; // No errMsg
 }
 
 template<typename T>
@@ -641,7 +641,7 @@ protected:
 
 // Template specialization for strings
 template <>
-inline TArg<string>::TArg(const string& flag, const string& help): _value(""), _flag(flag), _help(help), _defaultVal(""), _isDefault(false) { }
+inline TArg<string>::TArg(const string& flag, const string& help): _value(EMPTYSTR), _flag(flag), _help(help), _defaultVal(EMPTYSTR), _isDefault(false) { }
 
 template <typename T>
 ostream& operator<<(ostream &os, const TArg<T> &x) {
@@ -650,8 +650,8 @@ ostream& operator<<(ostream &os, const TArg<T> &x) {
 
 class IntArgList: public TArg<vector<int> > {
 public:
-  IntArgList(const string& flag, const string& help): TArg<vector<int> >(flag, help), _errMsg("") { }
-  inline string getErr() const { return _errMsg; }
+  IntArgList(const string& flag, const string& help): TArg<vector<int> >(flag, help), _errMsg(EMPTYSTR) { }
+  inline const string& getErr() const { return _errMsg; }
   inline int getValue(const int i) const { return _value.at(i); }
   ostream& printHelp(ostream &os) const {
     printListHelp(os, _flag, _help, _isDefault, _defaultVal);
@@ -679,8 +679,8 @@ inline ostream& operator << (ostream &os, const IntArgList &x) {
 
 class DblArgList: public TArg<vector<double> > {
  public:
-  DblArgList(const string& flag, const string& help): TArg<vector<double> >(flag, help), _errMsg("") { }
-  inline string getErr() const { return _errMsg; };
+  DblArgList(const string& flag, const string& help): TArg<vector<double> >(flag, help), _errMsg(EMPTYSTR) { }
+  inline const string& getErr() const { return _errMsg; };
   inline double getValue(const int i) const { return _value.at(i); };
   ostream& printHelp(ostream &os) const {
      printListHelp(os, _flag, _help, _isDefault, _defaultVal);
@@ -709,9 +709,9 @@ inline ostream& operator << (ostream &os, const DblArgList &x) {
 class StrArgList: public TArg<vector<string> > {
  public:
    StrArgList(const string& flag, const string& help, const bool isOptional = false):
-     TArg<vector<string> >(flag, help), _isOptional(isOptional), _errMsg("") { }
-   inline string getErr() const { return _errMsg; }
-   inline string getValue(const int i) const { return _value.at(i); }
+     TArg<vector<string> >(flag, help), _isOptional(isOptional), _errMsg(EMPTYSTR) { }
+   inline const string& getErr() const { return _errMsg; }
+   inline const string& getValue(const int i) const { return _value.at(i); }
    ostream& printHelp(ostream &os) const {
       printListHelp(os, _flag, _help, _isOptional, _defaultVal);
       return os;
@@ -754,7 +754,7 @@ class FlagArg: public TArg<bool> {
 
 class CommandLine {
  public:
-   CommandLine(const string funcname): FuncName(funcname), HelpString("") {};
+   CommandLine(const string funcname): FuncName(funcname), HelpString(EMPTYSTR) {};
    ~CommandLine() {};
 
    void IntSet(int number, ...);
@@ -773,7 +773,7 @@ class CommandLine {
       Process(argv, eout, sout, true);
    };
 
-   inline void HelpSet(const string str) {
+   inline void HelpSet(const string& str) {
       HelpString = str;
    };
    void DisplayHelp(std::ostream & eout) const;

@@ -6,7 +6,7 @@
 #   include "DataTypes.hpp"
 #endif
 
-string Output::CurrentUser = "";
+string Output::CurrentUser = EMPTYSTR;
 ostream *Output::StdOut = NULL;
 ostream *Output::StdErr = NULL;
 

@@ -122,7 +122,7 @@ private:
 #else
 // We provide a dummy definition for MSG when we're compiling the
 // single-processor version
-#  define MSG ""
+#  define MSG EMPTYSTR
 // If single-processor, this node is the root node for all intents and purposes
 #  define IFROOTNODE if (true)
 #endif                          // Terminates #if defined(MULTIPROC)

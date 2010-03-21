@@ -11,9 +11,9 @@ enum LearningRuleType { LRT_Undef, LRT_PostSyn, LRT_MvgAvg, LRT_PostSynB, LRT_Mu
 
 class SynapseType {
 public:
-   SynapseType(): m_learningRule(LRT_PostSyn), m_mu(0.0f), m_NMDArise(1),
-                  m_alpha(0.0f), m_Ksyn(1.0f), m_synSuccRate(1.0f),
-                  m_preNeurType(""), m_postNeurType(""), m_maxTimeStep(0) {};
+   SynapseType(const std::string& prePostNeurType = "default")
+     : m_learningRule(LRT_PostSyn), m_mu(0.0f), m_NMDArise(1), m_alpha(0.0f), m_Ksyn(1.0f), m_synSuccRate(1.0f),
+       m_preNeurType(prePostNeurType), m_postNeurType(prePostNeurType), m_maxTimeStep(0) {};
    SynapseType(const SynapseType& s);
    SynapseType(const LearningRuleType learningRule, const float mu,
 		       const unsigned int NMDArise, const float alpha, const float Ksyn, const float synFailRate,

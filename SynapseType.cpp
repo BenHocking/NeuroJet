@@ -21,7 +21,7 @@ SynapseType::SynapseType(const LearningRuleType learningRule, const float mu,
     m_learningRule(learningRule), m_mu(mu), m_NMDArise(NMDArise), m_alpha(alpha), m_Ksyn(Ksyn),
             m_synSuccRate(1.0f - synFailRate), m_preNeurType(preNeurType), m_postNeurType(
                     postNeurType) {
-    setRiseFile("");
+    setRiseFile(EMPTYSTR);
     setAlphaDecay();
 }
 

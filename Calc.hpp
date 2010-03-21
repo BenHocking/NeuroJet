@@ -35,10 +35,10 @@ inline int sign(T val) {
 
 struct CalcNode {
    // Constructors
-   CalcNode():prev(NULL), next(NULL), str("") {};
-   CalcNode(CalcNode * p):prev(p), next(NULL), str("") {};
+   CalcNode():prev(NULL), next(NULL), str(EMPTYSTR) {};
+   CalcNode(CalcNode * p):prev(p), next(NULL), str(EMPTYSTR) {};
    CalcNode(const std::string s):prev(NULL), next(NULL), str(s) {};
-   CalcNode(CalcNode * p, CalcNode * n):prev(p), next(n), str("") {};
+   CalcNode(CalcNode * p, CalcNode * n):prev(p), next(n), str(EMPTYSTR) {};
    CalcNode(CalcNode * p, const std::string s):prev(p), next(NULL), str(s) {};
    CalcNode(CalcNode * p, CalcNode * n, const std::string s):prev(p), next(n),
       str(s) {};

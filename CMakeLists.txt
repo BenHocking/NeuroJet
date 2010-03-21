@@ -5,12 +5,12 @@
 # @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
 
 cmake_minimum_required( VERSION 2.6 )
-project(NEUROJET CXX)
+project(NeuroJet CXX)
 if(DEBUG)
-	set(CMAKE_BUILD_TYPE Debug)
-	add_definitions(-DCHECK_BOUNDS)
+   set(CMAKE_BUILD_TYPE Debug)
+   add_definitions(-DCHECK_BOUNDS)
 else()
-	set(CMAKE_BUILD_TYPE Release)
+   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 if(MULTIPROC)
@@ -20,25 +20,21 @@ endif()
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_GLIBCXX_DEBUG;DEBUG")
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
-    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -isysroot /Developer/SDKs/MacOSX10.5.sdk")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -isysroot /Developer/SDKs/MacOSX10.5.sdk")
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_FULLY_DYNAMIC_STRING")
-    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_FULLY_DYNAMIC_STRING")
+#    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
+#    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_FULLY_DYNAMIC_STRING")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5")
     #Option -arch is only available with apple compilers
     include(CheckCXXCompilerFlag)
     check_cxx_compiler_flag("-arch i386" HAS_ARCH_FLAG)
-#    if(HAS_ARCH_FLAG)
+#    if(HAS_ARCH_FLAG) # For some 
         if(${CMAKE_GENERATOR} STREQUAL "Xcode")
             set(CMAKE_OSX_ARCHITECTURES "i386;")
         else()
             # Build for single architecture. Using this flag requires more than one
             # architecture in the list, so this hack of only providing one forces
             # a single architecture compile.
-            set(CMAKE_OSX_ARCHITECTURES "i386;i386")
+            set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
         endif()
 #    else()
 #	message("Using 64-bit mode on Mac")
@@ -51,13 +47,13 @@ if(NOT WIN32)
 endif()
 
 # Make sure the compiler can find include files. Need to find a better way of doing this
-include_directories(${NEUROJET_SOURCE_DIR})
+include_directories(${NeuroJet_SOURCE_DIR})
 
-file(GLOB ALL_SRC ${NEUROJET_SOURCE_DIR}/*.cpp ${NEUROJET_SOURCE_DIR}/*.s)
-file(GLOB SRC ${NEUROJET_SOURCE_DIR}/*.cpp ${NEUROJET_SOURCE_DIR}/*.s)
+file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
+file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 if(NOT (MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode"))
-  list(REMOVE_ITEM SRC ${NEUROJET_SOURCE_DIR}/Parallel.cpp)
-  list(REMOVE_ITEM SRC ${NEUROJET_SOURCE_DIR}/ParallelRand.cpp)
+  list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/Parallel.cpp)
+  list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/ParallelRand.cpp)
 endif()
 
 # Add header files so they show up in visual studio (really should be a 
@@ -67,10 +63,11 @@ if(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
 endif()
 
 set(FILES ${SRC} ${INCLUDES})
-set(TEST_DIR ${NEUROJET_SOURCE_DIR}/Test)
+set(TEST_DIR ${NeuroJet_SOURCE_DIR}/Test)
 
 # Unit tests
-add_executable(ArgFunctsTest ${TEST_DIR}/ArgFunctsTest.cpp ${NEUROJET_SOURCE_DIR}/Output.cpp)
+add_executable(ArgFunctsTest ${TEST_DIR}/ArgFunctsTest.cpp ${NeuroJet_SOURCE_DIR}/Output.cpp)
+add_executable(StringTest ${TEST_DIR}/StringTest.cpp)
 
 # Main executable
 add_executable(NeuroJet ${FILES})

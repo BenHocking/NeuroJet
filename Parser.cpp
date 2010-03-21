@@ -233,8 +233,8 @@ StackNode *Parser::GetArgs(StackNode * StartNode, ArgListType &arg) {
    }
 
    bool join = false;
-   string JoinTemp = "";
-   string TempStr = "";
+   string JoinTemp = EMPTYSTR;
+   string TempStr = EMPTYSTR;
 
    while (CurrentNode->getVal() != ")") {
       if (CurrentNode->getVal() == "^") {
@@ -264,13 +264,13 @@ StackNode *Parser::GetArgs(StackNode * StartNode, ArgListType &arg) {
          if (TempStr != ":") {
             JoinTemp += TempStr;
          } else {
-            TempStr = ""; // Don't actually attach the ":"
+            TempStr = EMPTYSTR; // Don't actually attach the ":"
             continue;
          }
       } else {
          JoinTemp = TempStr;
       }
-      TempStr = "";
+      TempStr = EMPTYSTR;
       join = (CurrentNode->getVal() == ":");
       // If the next node is not a join symbol, then add it to list 
       if (!join) {
@@ -326,7 +326,7 @@ void Parser::ParseLine(const string& lineIn, StackNode* &CurrentNode,
    
       // If it is a Quote symbol 
       if (ch == QuoteSymbol) {
-         string TempStr = "";
+         string TempStr = EMPTYSTR;
          ch = lineIn[curChar++];
    
          while (curChar < lineIn.size() && (ch != QuoteSymbol)) {
@@ -366,7 +366,7 @@ void Parser::ParseLine(const string& lineIn, StackNode* &CurrentNode,
          CurrentNode = CurrentNode->add(TempStr, CurrentLine);
       } else if (isalnum(ch) || ispunct(ch)) {
       // If an alpha numeric symbol 
-         string TempStr = "";
+         string TempStr = EMPTYSTR;
          while (curChar < lineIn.size() && (isalnum(ch) || ispunct(ch)) && !GrammarSymbol(ch)) {
             TempStr += ch;
             ch = lineIn[curChar++];

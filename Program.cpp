@@ -67,30 +67,27 @@ int program::GetIzhExplicitCount() const
    return IzhExplicitCount;
 }
 
-void program::PrintHelp(string str, string funct) const {
+void program::PrintHelp(const string& str, const string& funct) const {
    int gothelp = false;
-   ArgListType argHelp(1);
-   argHelp.at(0) = ArgType("-help", false);
+   ArgListType argHelp(1, ArgType("-help", false));
 
-   if (((str[0] == '@') || (str[0] == '^')) && str.length() != 1)
-   {
-      if (funct == "")
-      {
-         funct = str.substr(1, str.length() -1 );
-         str = str[0];
+   if (((str[0] == '@') || (str[0] == '^')) && str.length() != 1) {
+      if (funct.empty()) {
+         PrintHelp(str.substr(0, 1), str.substr(1, str.length() - 1));
+	 return;
       }
-      else
-      {
+      else {
          Output::Err() << "conflict - did you want help on " << str << " or " << str[0] << funct <<"?\n\n";
          PrintHelp("help");
          exit(EXIT_FAILURE);
       }
    }
-   if ((str == "@") || (str == "")) {
-      if (funct == "") {
+   if ((str == "@") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl << "@ Functions:" << std::endl;
          SystemVar::OutputAtFuns();
-      } else {
+      }
+      else {
          AT_FUN helpfun = SystemVar::GetAtFun(funct);
          if (helpfun == NULL) {
             Output::Err() << funct << " is not an @ function.\n\n";
@@ -103,8 +100,8 @@ void program::PrintHelp(string str, string funct) const {
       gothelp = true;
    }
 
-   if ((str == "^") || (str == "")) {
-      if (funct == "") {
+   if ((str == "^") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl << "^ Functions:" << std::endl;
          SystemVar::OutputCaretFuns();
       } else {
@@ -120,8 +117,8 @@ void program::PrintHelp(string str, string funct) const {
       gothelp = true;
    }
 
-   if ((str == "int") || (str == "")) {
-      if (funct == "") {
+   if ((str == "int") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl << "int variables:" << std::endl;
          SystemVar::OutputIntVars();
       } else {
@@ -137,8 +134,8 @@ void program::PrintHelp(string str, string funct) const {
       gothelp = true;
    }
 
-   if ((str == "float") || (str == "")) {
-      if (funct == "") {
+   if ((str == "float") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl << "float variables:" << std::endl;
          SystemVar::OutputFloatVars();
       } else {
@@ -154,8 +151,8 @@ void program::PrintHelp(string str, string funct) const {
       gothelp = true;
    }
 
-   if ((str == "string") || (str == "")) {
-      if (funct == "") {
+   if ((str == "string") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl << "string variables:" << std::endl;
          SystemVar::OutputStrVars();
       } else {
@@ -171,8 +168,8 @@ void program::PrintHelp(string str, string funct) const {
       gothelp = true;
    }
 
-   if ((str == "symbol") || (str == "")) {
-      if (funct == "") {
+   if ((str == "symbol") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl << "grammar symbols:" << std::endl;
          for (int i = 1; i <= NumGrammarSymbols; i++) {
             Output::Err() << " " << GrammarSymbolList[i] << '\t' << SymbolHelp[i] << std::endl;
@@ -190,8 +187,8 @@ void program::PrintHelp(string str, string funct) const {
       gothelp = true;
    }
 
-   if ((str == "help") || (str == "")) {
-      if (funct == "") {
+   if ((str == "help") || (str.empty())) {
+      if (funct.empty()) {
          Output::Err() << std::endl;
          Output::Err() << "\nUse -help @ to get a list of @ functions"
             "\nUse -help ^ to get a list of ^ functions"
@@ -210,7 +207,7 @@ void program::PrintHelp(string str, string funct) const {
             "\nNeuroJet sends help information to standard error. To redirect"
             "\nstandard error to standard out and then pipe to a command"
             "\nuse '2>&1 |' in ksh and '|&' in csh or tcsh. To send to a"
-            "\nfile replace the '|' with a '>' in the above commands.";
+            "\nfile replace the '|' with a '>' in the above commands." << std::endl;
       } else {
          CALL_ERROR << str << " " << funct << " is an invalid help sequence.\n\n" << ERR_WHERE;
          PrintHelp("help");
@@ -224,7 +221,7 @@ void program::PrintHelp(string str, string funct) const {
       PrintHelp("help");
       exit(EXIT_FAILURE);
    }
-   Output::Err() << std::endl << std::endl;
+   Output::Err() << std::endl;
 
    return;
 }

@@ -295,7 +295,7 @@ void WeightAnalysis(ArgListType &arg) { //AT_FUN
    // Output the data
    Output::Out() << "\nFound weight distributions";
    if (Con.getValue() != -1) {
-      Output::Out() << " of neurons with " << (Loop.getValue() ? "loop" : "")
+      Output::Out() << " of neurons with " << (Loop.getValue() ? "loop" : EMPTYSTR)
                     << " context length " << Con.getValue() << " from sequence "
                     << SeqName.getValue();
    } else if (UsedOnly.getValue()) {

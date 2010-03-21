@@ -88,11 +88,19 @@ using namespace std;
 
 // version information
 #if defined(MULTIPROC)
+#  if defined(DEBUG)
+const string NeuroJetVersionText = "NeuroJet (multi-processor, debug)";
+#  else
 const string NeuroJetVersionText = "NeuroJet (multi-processor)";
+#  endif
 #else
+#  if defined(DEBUG)
+const string NeuroJetVersionText = "NeuroJet v2.A.1 (single-processor, debug)";
+#  else
 const string NeuroJetVersionText = "NeuroJet v2.A.1 (single-processor)";
+#  endif
 #endif
-const string NeuroJetLastUpdateText = "Last changed on Thu Jan 14 20:41:13 EST 2010";
+const string NeuroJetLastUpdateText = "Last changed on Wed Mar 17 07:41:13 EST 2010";
 const string NeuroJetLastUpdateAuth = "Last changed by bhocking";
 
 #if !defined(IOS)
@@ -334,7 +342,7 @@ void InitializeProgram()
 
    //NMDA RISE SYSTEM VARIABLES
    SystemVar::AddIntVar("NMDArise", 0);
-   SystemVar::AddStrVar("riseFile", "");
+   SystemVar::AddStrVar("riseFile", EMPTYSTR);
    SystemVar::AddIntVar("saveZbarArray", 0);
 	//new threshold paradigms:
    SystemVar::AddIntVar("useThreshE", 0); //E > Log > Rational if all are set to true
@@ -349,12 +357,12 @@ void InitializeProgram()
    SystemVar::AddIntVar("DumpDendrite", 0);
    SystemVar::AddFloatVar("CAconst", 0.0f);
    SystemVar::AddFloatVar("VarKConductance", 0.0f);
-   SystemVar::AddStrVar("ReadWeights", "");
-   SystemVar::AddStrVar("ResetPattern", "");
-   SystemVar::AddStrVar("title", "");
+   SystemVar::AddStrVar("ReadWeights", EMPTYSTR);
+   SystemVar::AddStrVar("ResetPattern", EMPTYSTR);
+   SystemVar::AddStrVar("title", EMPTYSTR);
 
-   SystemVar::AddStrVar("DendriteToSomaFilter", "");
-   SystemVar::AddStrVar("SynapseFilter", "");
+   SystemVar::AddStrVar("DendriteToSomaFilter", EMPTYSTR);
+   SystemVar::AddStrVar("SynapseFilter", EMPTYSTR);
    SystemVar::AddIntVar("WtFiltIsGeneric", 0);
 
    SystemVar::AddFloatVar("InternrnExcDecay", 1.0f);
@@ -364,7 +372,7 @@ void InitializeProgram()
    // Izhikevich neuron type - automatically sets other Izhikevich variables,
    // but these can be later overridden. Types are A-T and correspond to his
    // figure 1 in several papers (e.g., IEEE NNS, 2004)
-   SystemVar::AddStrVar("IzhType", "");
+   SystemVar::AddStrVar("IzhType", EMPTYSTR);
    // Izhikevich explicit variables - currently, they should all be set or
    // none should be set. Also, deltaT should be set.
    SystemVar::AddFloatVar("IzhvStart", -1.0f);
@@ -411,7 +419,7 @@ void InitializeProgram()
    SystemVar::AddFloatVar("AveWij0", 0.0f, true);
    SystemVar::AddFloatVar("FracZeroWij", 0.0f, true);
    SystemVar::AddFloatVar("FracConnect", 0.0f, true);
-   SystemVar::AddStrVar("InputFile", "", true);
+   SystemVar::AddStrVar("InputFile", EMPTYSTR, true);
 
    // Internally regulated Variables
    program::Main().setNetworkCreated(false);
@@ -570,8 +578,8 @@ void PopulatePopulation(const string& globalProps, const string& neuronProps,
    // Currently, this bracket is here to manage memory - should be its own function
    {
       map<string, string> neuronVars = ParseStruct(neuronProps);
-      vector<string> faninVec = tokenize(debracket(neuronVars["fanin"], '{', '}'), ',', "");
-      vector<string> typeVec = tokenize(debracket(neuronVars["type"], '{', '}'), ',', "");
+      vector<string> faninVec = tokenize(debracket(neuronVars["fanin"], '{', '}'), ',', EMPTYSTR);
+      vector<string> typeVec = tokenize(debracket(neuronVars["type"], '{', '}'), ',', EMPTYSTR);
       if (faninVec.size() != (lastN - firstN + 1)) {
          CALL_ERROR << "Fan-in vector of incorrect size:\n"
                     << "  Size:     " << faninVec.size() << "\n"
@@ -605,9 +613,9 @@ void PopulatePopulation(const string& globalProps, const string& neuronProps,
          int shuffRow = SHUFFLEIFMULTIPROC(i);
          // Only works if vector is space delimited
          // FIXME: Add check for commas
-         vector<string> cSubVec = tokenize(debracket(cVec[i-firstN], '[', ']'), ' ', "");
-         vector<string> wSubVec = tokenize(debracket(wVec[i-firstN], '[', ']'), ' ', "");
-         vector<string> aSubVec = tokenize(debracket(aVec[i-firstN], '[', ']'), ' ', "");
+         vector<string> cSubVec = tokenize(debracket(cVec[i-firstN], '[', ']'), ' ', EMPTYSTR);
+         vector<string> wSubVec = tokenize(debracket(wVec[i-firstN], '[', ']'), ' ', EMPTYSTR);
+         vector<string> aSubVec = tokenize(debracket(aVec[i-firstN], '[', ']'), ' ', EMPTYSTR);
          if (cSubVec.size() != FanInCon[i]) {
             CALL_ERROR << "Connectivity vector wrong size for neuron " << i << ERR_WHERE;
             exit(EXIT_FAILURE);
@@ -860,13 +868,15 @@ void CalcDendriticExcitation() {
    enqueueDendriticResponse(dendExc, sumwz_inhdiv, sumwz_inhsub);
 }
 
-void CalcDendriticToSomaInput(const xInput& curPattern, const bool isComp) {
+void CalcSomaDecay() {
    //FLEX: Other decay options exist
    for (PopulationCIt PCIt = Population::Member.begin();
         PCIt != Population::Member.end(); ++PCIt) {
       const NeuronType* curNType = PCIt->getNeuronType();
       const float yDecay = curNType->getParameter("yDecay", SystemVar::GetFloatVar("yDecay"));
       const float DumpConst = curNType->getParameter("DumpConst", SystemVar::GetFloatVar("DumpConst"));
+		const unsigned int firstN = PCIt->getFirstNeuron();
+		const unsigned int lastN = PCIt->getLastNeuron();
       if (fabs(yDecay) > verySmallFloat) {
          // Has to happen before decay to match equations correctly
          if (fabs(DumpConst) > verySmallFloat) {
@@ -874,17 +884,17 @@ void CalcDendriticToSomaInput(const xInput& curPattern, const bool isComp) {
 //            #pragma omp parallel for
             for (unsigned int i = 0; i < Fired[justNow].size(); ++i) {
                unsigned int firedNrn = Fired[justNow][i];
-               if ((PCIt->getFirstNeuron()<=firedNrn) && (firedNrn<=PCIt->getLastNeuron())) {
+               if ((firstN<=firedNrn) && (firedNrn<=lastN)) {
                  somaExc[firedNrn] -= DumpConst;
                }
             }
          }
          // Decay the excitation values
-         for (unsigned int i = PCIt->getFirstNeuron(); i <= PCIt->getLastNeuron(); ++i) {
+         for (unsigned int i = firstN; i <= lastN; ++i) {
             somaExc[i] *= yDecay;
          }
       } else {
-         for (unsigned int i = PCIt->getFirstNeuron(); i <= PCIt->getLastNeuron(); ++i) {
+         for (unsigned int i = firstN; i <= lastN; ++i) {
             somaExc[i] = 0.0f;
          }
          if (fabs(DumpConst) > verySmallFloat) {
@@ -892,13 +902,15 @@ void CalcDendriticToSomaInput(const xInput& curPattern, const bool isComp) {
 //            #pragma omp parallel for
             for (unsigned int i = 0; i < Fired[justNow].size(); ++i) {
                unsigned int firedNrn = Fired[justNow][i];
-               if ((PCIt->getFirstNeuron()<=firedNrn) && (firedNrn<=PCIt->getLastNeuron()))
+               if ((firstN<=firedNrn) && (firedNrn<=lastN))
                  somaExc[firedNrn] = -DumpConst;
             }
          }
       }
    }
+}
 
+void CalcDendriticToSomaInput(const xInput& curPattern, const bool isComp) {
    // Competitive networks don't use inhibition
    if (isComp) {
       for (PopulationCIt PCIt = Population::Member.begin();
@@ -910,6 +922,14 @@ void CalcDendriticToSomaInput(const xInput& curPattern, const bool isComp) {
          }
       }
    } else {
+		bool anyInhDiv = false;
+		for (PopulationCIt PCIt = Population::Member.begin(); PCIt != Population::Member.end(); ++PCIt) {
+			if (PCIt->getNeuronType()->isInhDivType()) {
+				anyInhDiv = true;
+				break;
+			}
+		}
+
       // Now, the root node looks at neural excitations and external input
       // and then decides whether each neuron fires
 
@@ -932,15 +952,19 @@ void CalcDendriticToSomaInput(const xInput& curPattern, const bool isComp) {
          const Filter popFilter = PCIt->getNeuronType()->getFilter();
 //         #pragma omp parallel for
          for (unsigned int i = PCIt->getFirstNeuron(); i <= PCIt->getLastNeuron(); ++i) {
-            float numerator = popFilter.apply(dendriteQueue[i]) -
+            const float numerator = popFilter.apply(dendriteQueue[i]) -
                      popFilter.apply(dendriteQueue_inhsub[i]) + DGstrength * curPattern[i];
             somaExc[i] += numerator;
             if (useSomaInh) {
-               // abh2n: This has just changed (Aug 25, 06) from defaulting to Dendritic inhibition
-               Inhibition[i] = popFilter.apply(dendriteQueue_inhdiv[i]) + BaseInhib +
-                                 VarKConductanceVal * VarKConductanceArray[i];
-               if (numerator + Inhibition[i] > verySmallFloat) {
-                  somaExc[i] /= (numerator + Inhibition[i]);
+					Inhibition[i] = numerator + BaseInhib;
+					if (anyInhDiv) {
+						Inhibition[i] += popFilter.apply(dendriteQueue_inhdiv[i]);
+					}
+					if (VarKConductanceVal > verySmallFloat) {
+						Inhibition[i] += VarKConductanceVal * VarKConductanceArray[i];
+					}
+               if (Inhibition[i] > verySmallFloat) {
+                  somaExc[i] /= Inhibition[i];
                } else {
                   // Don't want dividing by a negative number!
                   somaExc[i] = 0;
@@ -1222,6 +1246,7 @@ void CompPresent(const xInput &curPattern, const bool modifyExcWeights) {
    // increment the time step
    ++timeStep;
 
+   CalcSomaDecay();
    CalcDendriticToSomaInput(curPattern, true);
 
    // Get ready for firing
@@ -2447,6 +2472,7 @@ void Present(const xInput &curPattern, DataMatrix &IzhVValues, DataMatrix &IzhUV
 #endif
    if (calcNeuronData) {
       CalcDendriticExcitation();
+      CalcSomaDecay();
       CalcDendriticToSomaInput(curPattern, false);
       CalcSomaResponse(curPattern, IzhVValues, IzhUValues);
    }
@@ -2512,7 +2538,7 @@ MatlabCommand ReadMATLABcommand(ifstream& mfile, const string& popFile) {
    bool ignoreNextWhitespace = true;
    const string ignoreTrigger = " ;{}[]=()";
    unsigned int depthIn = 0; // Depth of [, (, or {, but mainly (
-   string wholeCmd = "";
+   string wholeCmd = EMPTYSTR;
    char prevChar = '\0';
    char nextChar;
    while ((!mfile.eof()) && (!atEOC)) {
@@ -2580,7 +2606,7 @@ MatlabCommand ReadMATLABcommand(ifstream& mfile, const string& popFile) {
       }
    }
    string::size_type index = wholeCmd.find('=');
-   string LHS = "";
+   string LHS = EMPTYSTR;
    string RHS = wholeCmd;
    if (index != string::npos) {
       LHS = wholeCmd.substr(0,index-1);
@@ -2891,11 +2917,11 @@ void ResetSTM() {
         it != Population::Member.end(); ++it) {
       updateMax(lastTimeOffset, it->getNeuronType()->getFilterSize());
    }
-   if (SystemVar::GetStrVar("ResetPattern") == "") {
+   if (SystemVar::GetStrVar("ResetPattern") == EMPTYSTR) {
       // Reset with random noise, forced probability of firing
       for (unsigned int timeOffset = 0; timeOffset < lastTimeOffset; ++timeOffset) {
          // Reset with Z0
-      	Output::Out() << "Resetting with Z0" << std::endl;
+         //Output::Out() << "Resetting with Z0" << std::endl;
          zi = Pattern(ni, false);
          Fired.pop_back();
          Fired.push_front(UIVector(0));
@@ -2907,7 +2933,6 @@ void ResetSTM() {
          for (PopulationIt pIt = Population::Member.begin();
               pIt != Population::Member.end(); ++pIt) {
             const unsigned int firstN = pIt->getFirstNeuron();
-				Output::Out() << "firstN = " << firstN << std::endl;
             const unsigned int popSize = pIt->getLastNeuron() - firstN + 1;
             const float ResetAct = pIt->getNeuronType()->getParameter("ResetAct",
                                                            defResetAct);
@@ -3327,7 +3352,7 @@ void CreateNetwork (ArgListType &arg) //AT_FUN
       SystemVar::SetStrVar("ReadWeights", WeightFile.getValue());
 
    // Either read weights from file or set them up from parameters
-   if (SystemVar::GetStrVar("ReadWeights") != "") {
+   if (SystemVar::GetStrVar("ReadWeights") != EMPTYSTR) {
       IFROOTNODE {
          Output::Out() << "Using Weight File: " << SystemVar::GetStrVar("ReadWeights") << std::endl;
       }
@@ -3745,7 +3770,7 @@ void LoadData (ArgListType &arg) //AT_FUN
    // set up memory appropriately
    bool foundData = chkDataExists(DataName, newDataType, FunctionName, ComL);
    DataMatrix NewInMatrix;
-   string ThisFloat = "";
+   string ThisFloat = EMPTYSTR;
 
    // read in data
    int  PatternCount = 0;
@@ -3787,7 +3812,7 @@ void LoadData (ArgListType &arg) //AT_FUN
                ++i;
                continue;
             }
-            ThisFloat = "";
+            ThisFloat = EMPTYSTR;
             while ((i < TotalExtracted) && !isspace(lineBuf[i])) {
                ThisFloat += lineBuf[i];
                i++;
@@ -4971,15 +4996,15 @@ void SetVar(ArgListType &arg) //AT_FUN
    deprecatedVars["wNoise"] = "synFailRate";
    deprecatedVars["Ki"] = "KFF";
    deprecatedVars["Kr"] = "KFB";
-   deprecatedVars["v"] = "";
-   deprecatedVars["dt"] = "";
-   deprecatedVars["nmda"] = "";
-   deprecatedVars["niCA1"] = "";
-   deprecatedVars["PeriodCA1"] = "";
-   deprecatedVars["ActivityTestCA1"] = "";
-   deprecatedVars["ActivityTrainCA1"] = "";
-   deprecatedVars["AmplitudeCA1"] = "";
-   deprecatedVars["ConCA3CA1"] = "";
+   deprecatedVars["v"] = EMPTYSTR;
+   deprecatedVars["dt"] = EMPTYSTR;
+   deprecatedVars["nmda"] = EMPTYSTR;
+   deprecatedVars["niCA1"] = EMPTYSTR;
+   deprecatedVars["PeriodCA1"] = EMPTYSTR;
+   deprecatedVars["ActivityTestCA1"] = EMPTYSTR;
+   deprecatedVars["ActivityTrainCA1"] = EMPTYSTR;
+   deprecatedVars["AmplitudeCA1"] = EMPTYSTR;
+   deprecatedVars["ConCA3CA1"] = EMPTYSTR;
    for (ArgListTypeIt it = arg.begin(); it!= arg.end(); /* do nothing */) {
       string VarName = (it++)->first;
       if (deprecatedVars.find(VarName) != deprecatedVars.end()) {
@@ -5197,10 +5222,10 @@ void Sim(ArgListType &arg) //AT_FUN
       // set up the labels
       if (DoSummary.getValue()) {
          Output::Out() << "Summary Statistics: \n X " << setiosflags(ios::left);
-         string dovStr = (DoDov.getValue()) ? "dov. " : "";
+         string dovStr = (DoDov.getValue()) ? "dov. " : EMPTYSTR;
          for (int i = 0; i < numWinners; ++i) {
             if (i == numWinners - 1) {
-               dovStr = "";
+               dovStr = EMPTYSTR;
             }
             Output::Out() << "win" << std::setw(3) << (i + 1) << " sim. " << dovStr;
          }
@@ -5770,7 +5795,7 @@ void Train(ArgListType &arg) //AT_FUN
 
    // build the analysis list
    int  AnaNum = AnaCalls.size();
-   ArgListType AnaArgs(AnaNum, ArgType("", false));
+   ArgListType AnaArgs(AnaNum, EMPTYARG);
    for (int anai = 0; anai < AnaNum; anai++) {
       AnaArgs.at(anai).first = AnaCalls[anai];
    }
@@ -6213,7 +6238,7 @@ string PickSeq (ArgListType &arg) //CARET_FUN
    exit(EXIT_FAILURE);
 
    // never get here
-   return "";
+   return EMPTYSTR;
 }
 
 string Num2Int(ArgListType &arg) //CARET_FUN
@@ -6547,7 +6572,7 @@ void CreateAnalysis(ArgListType &arg) //AT_FUN
    StrList CurrentList;
    DataMatrix CurrentAna;
    bool listCreated = false;
-   string listName = "";
+   string listName = EMPTYSTR;
    for (int i = 0; i < num; i++) {
       string curArg = arg.at(i).first;
       if (curArg == "[") {

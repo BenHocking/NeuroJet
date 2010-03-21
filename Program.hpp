@@ -44,6 +44,7 @@ using std::map;
 using std::ifstream;
 using std::deque;
 using std::list;
+#  include <string>
 
 /**************************************************************/
 /* program class prototype */
@@ -57,7 +58,7 @@ class program {
    int GetIzhExplicitMaxCount() const { return 6; }; // returns maximum possible ""
       //TODO: Get rid of magic number above
 
-   void PrintHelp(string str = "", string func = "") const;
+   void PrintHelp(const string& str = EMPTYSTR, const string& func = EMPTYSTR) const;
 
    inline bool getNetworkCreated() const { return networkCreated; }
    inline void setNetworkCreated(const bool nwCreated) { networkCreated = nwCreated; }
