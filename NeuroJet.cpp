@@ -83,6 +83,7 @@ double total_time;
 //#endif
 
 #include <stdexcept>
+#include <algorithm>
 
 using namespace std;
 
@@ -110,6 +111,13 @@ const string NeuroJetLastUpdateAuth = "Last changed by bhocking";
 #    define IOS ios
 #  endif
 #endif
+
+#if defined(DEBUG)
+#  if !defined(CHECK_BOUNDS)
+#    define CHECK_BOUNDS true
+#  endif
+#endif
+#include <cassert>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Definitions
@@ -505,6 +513,8 @@ void InitializeProgram()
    SystemVar::AddCaretFun("RandomSeed", RandomSeed);
    SystemVar::AddCaretFun("SumData", SumData);
 
+	program::Main().chkNoiseInit();
+
    // Load user stuff
    BindUserFunctions();
    return;
@@ -713,7 +723,7 @@ void AllocateMemory() {
 
    // Allocate Memory for the connections
    FanInCon.assign(ni, 0);
-   FanOutCon.assign(ni, UIVector(maxAxonalDelay + 1, 0));
+   FanOutCon.assign(ni, UIVector(maxAxonalDelay, 0));
 
    // Allocate memory for fan-in connections
    inMatrix = new DendriticSynapse *[ni];
@@ -1355,7 +1365,8 @@ void FillFanOutMatrices()
    // number of neurons for the node.]
    for (unsigned int row = StartNeuron; row <= EndNeuron; row++) {
       outMatrix[row] = new AxonalSynapse *[maxAxonalDelay];
-      for (unsigned int refTime = minAxonalDelay-1; refTime < FanOutCon[row].size(); ++refTime) {
+		assert(FanOutCon.at(row).size() == maxAxonalDelay);
+      for (unsigned int refTime = minAxonalDelay-1; refTime < maxAxonalDelay; ++refTime) {
 #if defined(CHECK_BOUNDS)
          outMatrix[row][refTime] = new AxonalSynapse[FanOutCon.at(row).at(refTime)];
 #else
@@ -3028,6 +3039,8 @@ void SetConnectivity(const int &AllowSelf, const char &dType,
    bool found = false;
    double tempweight = 0.0;
    float zeroCutOff = SystemVar::GetFloatVar("ZeroCutOff");
+	const unsigned int lastAxonalDelay = maxAxonalDelay - 1;
+	const unsigned int firstAxonalDelay = minAxonalDelay - 1;
    for (unsigned int n = 0; n < ni; n++) {
       if (OneThird && n && !(n % OneThird)) {
          Output::Out() << "." << flush;
@@ -3079,13 +3092,13 @@ void SetConnectivity(const int &AllowSelf, const char &dType,
          }
 
          ++NumMade;
-         unsigned int refTime = minAxonalDelay - 1;
+         unsigned int refTime = firstAxonalDelay;
          unsigned int toMake = numSynapsesPerTimeDelay;
-         if (refTime-minAxonalDelay+1 < remSynapsesPerTimeDelay)
+         if (refTime - firstAxonalDelay < remSynapsesPerTimeDelay)
             ++toMake;
-         while (FanOutCon[NeuronIn][refTime] > toMake) {
+         while (refTime < lastAxonalDelay && FanOutCon[NeuronIn][refTime] > toMake) {
             ++refTime;
-            if (refTime-minAxonalDelay+1 == remSynapsesPerTimeDelay)
+            if (refTime - firstAxonalDelay == remSynapsesPerTimeDelay)
                --toMake;
          }
          // The number of fan-out synapses can be more (or less) than the number
@@ -3094,8 +3107,8 @@ void SetConnectivity(const int &AllowSelf, const char &dType,
          // (for large enough n) it is fixed fan-out. Not true for the last axonal
          // delay. However, the average value of connections is approximately the
          // same per neuron.
-         if (refTime > maxAxonalDelay-1)
-            refTime = maxAxonalDelay-1;
+         if (refTime > lastAxonalDelay)
+            refTime = lastAxonalDelay;
          ++FanOutCon[NeuronIn][refTime];  // increment fan out count
       }
    }
@@ -3109,9 +3122,9 @@ void SetConnectivity(const int &AllowSelf, const char &dType,
       DendriticSynapse * dendriticTree = inMatrix[faninrow];
       for (unsigned int col = 0; col < FanInCon[faninrow]; col++) {
          const unsigned int fanoutrow = dendriticTree[col].getSrcNeuron();
-         unsigned int refTime = minAxonalDelay-1;
+         unsigned int refTime = firstAxonalDelay;
 #if defined(CHECK_BOUNDS)
-         while ((refTime < maxAxonalDelay) &&
+         while ((refTime < lastAxonalDelay) &&
             (ConCount.at(fanoutrow).at(refTime) >= FanOutCon.at(fanoutrow).at(refTime)))
 #else
          while (ConCount[fanoutrow][refTime] >= FanOutCon[fanoutrow][refTime])
@@ -3122,6 +3135,13 @@ void SetConnectivity(const int &AllowSelf, const char &dType,
          ++ConCount[fanoutrow][refTime];
       }
    }
+#if defined(DEBUG)
+   for (unsigned int row = StartNeuron; row <= EndNeuron; row++) {
+      for (unsigned int refTime = firstAxonalDelay; refTime < maxAxonalDelay; ++refTime) {
+			assert(ConCount[row][refTime] == FanOutCon.at(row).at(refTime));
+		}
+	}
+#endif
 
    SystemVar::SetFloatVar("AveWij", static_cast<float>(TotalSumOfWeights /
               (NumNetworkCon - TotalNumberOfZeros)));

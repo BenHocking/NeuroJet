@@ -17,7 +17,12 @@ if(MULTIPROC)
 	add_definitions(-DMULTIPROC)
 endif()
 
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_GLIBCXX_DEBUG;DEBUG")
+# Argg! Xcode currently does not work with _GLIBCXX_DEBUG (it compiles, but will easily crash)
+if(APPLE)
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "DEBUG")
+else()
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "_GLIBCXX_DEBUG;DEBUG")
+endif()
 
 if(APPLE)
 #    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
