@@ -1,0 +1,198 @@
+# In: Decision4.TestSequence - Name of the sequence to test with.
+#     Decision4.SimSequence - The name of the sequence that contains the
+#                             correct pattern in the first part of the
+#                             sequence, and the incorrect pattern in the
+#                             second part of the sequence
+#     Decision4.AnswerBegin - The first pattern in the TestSequence to use
+#                             in comparing against SimSequence
+#     Decision4.AnswerEnd - The last pattern in the TestSequence to use
+#                           in comparing against SimSequence
+#     Decision4.RewardBegin - The first pattern in the TestSequence to use
+#                             in comparing against +/- neurons
+#     Decision4.RewardEnd - The last pattern in the TestSequence to use
+#                           in comparing against +/- neurons
+#     Decision4.Threshold - The value to use to determine whether the
+#                           choice is significant. Only values from 0 to 1
+#                           are meaningful, and very small values are best
+#     Decision4.Correct - Whether or not the correct choice was made last
+#                         time
+#
+# Out: Decision4.Correct - Whether or not the correct choice was made this
+#                          time
+#      Decision4.FreePass - Whether or not the simulation was given a free
+#                          pass
+#
+# Tmp: Decision4.TestSequenceLen - Number of time-steps in the test sequence
+#      Decision4.RandAmt - Used for flipping weighted coin
+#      Decision4.CorrectAmt - Measure of correspondence of test
+#                             sequence with "correct" subsequence
+#                             (e.g., a in [AB]a+)
+#      Decision4.WrongAmt - Measure of correspondence of test
+#                           sequence with "wrong" subsequence
+#      Decision4.PlusAmt - Measure of correspondence of test
+#                          sequence with plus subsequence
+#      Decision4.MinusAmt - Measure of correspondence of test
+#                           sequence with minus subsequence
+#      Decision4.CorrectPlus - Decision4.CorrectAmt + Decision4.PlusAmt
+#      Decision4.CorrectMinus - Decision4.CorrectAmt + Decision4.MinusAmt
+#      Decision4.WrongPlus - Decision4.WrongAmt + Decision4.PlusAmt
+#      Decision4.WrongMinus - Decision4.WrongAmt + Decision4.MinusAmt
+#      Decision4.Winner - one of "Decision4.CorrectPlus", "Decision4.CorrectMinus",
+#                         "Decision4.WrongPlus", or "Decision4.WrongMinus". 
+#                         String - not actual value of these variables.
+#      Decisoin4.WinAmt - Corresponding value of Decision4.Winner. Should
+#                         also equal ^(^(Decision4.Winner))
+#      Decision4.DiffAmtPlus - Difference between WinAmt and losing
+#                              plus amount. E.g., if Winner is
+#                              "Decision4.WrongPlus", then DiffAmtPlus
+#                              equals WrongPlus - CorrectPlus
+#      Decision4.DiffAmtMinus - Difference between WinAmt and losing
+#                               minus amount. E.g., if Winner is
+#                               "Decision4.WrongPlus", then DiffAmtMinus
+#                               equals WrongPlus - WrongMinus
+#      Decision4.DiffAmt - Closest that losing choice came to winning.
+#                          I.e., min[DiffAmtPlus, DiffAmtMinus]
+
+@SetVar(Decision4.CorrectAmt 0)
+?If (^(Decision4.Correct) = 0) {
+  # If last decision was wrong, give him a 50% chance of automatically
+  #  getting it right
+  @SetVar(
+    Decision4.CorrectAmt ^Calc(randint[0,1])
+    Decision4.WrongAmt   0
+  )
+}
+@SetVar(Decision4.FreePass 0)
+?If (^(Decision4.CorrectAmt) = 1) {
+  @Echo("Simulation given a free pass!")
+  @SetVar(Decision4.FreePass 1 Decision4.Correct 1)
+}
+# If not cheating...
+?If (^(Decision4.FreePass) = 0) {
+  @SetVar(Decision4.TestSequenceLen
+          ^SequenceLength(-from ^(Decision4.TestSequence)))
+  @MakeRandSequence(-name InitPtn -Nend ^(ni) -len ^(Period) -p ^Calc(^(Activity) * 0.3))
+  @Test(-name InitPtn -time ^SequenceLength(-from InitPtn) -nocomp -norecord 7 TestingThresholds TestingBusLines TestingIntBusLines TestingKWeights TestingInhibitions TestingFBInternrnExc TestingFFInternrnExc)
+  ?If (~exists[saveReset]) { @CreateVar(saveReset 0) }
+  @SetVar(saveReset ^(Reset))
+  @SetVar(Reset 0)
+  ?If(exists[TestingCount]) {
+    @SetVar(TestingCount ^Calc(^(TestingCount) + 1))
+  }
+  ?If(exists[Setme.OnNoiseProb]) {
+    @MakeRandSequence(-name OnNoise -p ^(Setme.OnNoiseProb) -len ^(Decision4.TestSequenceLen))
+    @CombineData(-to tstSeq -from 2 ^(Decision4.TestSequence) OnNoise)
+    @SetVar(Decision4.TmpSequence tstSeq)
+  }
+  ?If(~exists[Setme.OnNoiseProb]) {
+    @SetVar(Decision4.TmpSequence ^(Decision4.TestSequence))
+  }
+  @Test(-name ^(Decision4.TmpSequence) -time ^(Decision4.TestSequenceLen) -nocomp -norecord 7 TestingThresholds TestingBusLines TestingIntBusLines TestingKWeights TestingInhibitions TestingFBInternrnExc TestingFFInternrnExc)
+  ?If(exists[tstActFileName]) {
+    @SaveData(-from TestingActivity -to ^(tstActFileName) -append)
+    @DeleteData(TestingActivity)
+  }
+  ?If(exists[tstBuffPrefix]) {
+    @SaveData(-from TestingBuffer -to ^(tstBuffPrefix):^(TrainingCount):_:^(TestingCount):.dat)
+  }
+  @SetVar(Reset ^(saveReset))
+  @PrintVar(AveTestAct Activity)
+  @Sim(-x ^(Decision4.SimSequence) -y TestingBuffer -nosum)
+  @DeleteData(TestingBuffer)
+  # Calculate average cos similarity over relevant ranges
+  @SetVar(
+    Decision4.CorrectAmt
+      ^Calc(^SumData(-pat ^(Decision4.AnswerBegin)
+                     -patend ^(Decision4.AnswerEnd)
+                     -Nstart 1 -Nend 1 -from SimBuffer)
+                       / ^(Decision4.TestSequenceLen))
+    Decision4.WrongAmt
+      ^Calc(^SumData(-pat ^(Decision4.AnswerBegin)
+                     -patend ^(Decision4.AnswerEnd)
+                     -Nstart 2 -Nend 2 -from SimBuffer)
+                       / ^(Decision4.TestSequenceLen))
+  )
+  @SetVar(
+    Decision4.PlusAmt
+      ^Calc(^SumData(-pat ^(Decision4.RewardBegin)
+                     -patend ^(Decision4.RewardEnd)
+                     -Nstart 3 -Nend 3 -from SimBuffer)
+                       / ^(Decision4.TestSequenceLen))
+    Decision4.MinusAmt
+      ^Calc(^SumData(-pat ^(Decision4.RewardBegin)
+                     -patend ^(Decision4.RewardEnd)
+                     -Nstart 4 -Nend 4 -from SimBuffer)
+                       / ^(Decision4.TestSequenceLen))
+  )
+  @SetVar(
+    Decision4.CorrectPlus
+      ^Calc(^(Decision4.CorrectAmt) + ^(Decision4.PlusAmt))
+    Decision4.CorrectMinus
+      ^Calc(^(Decision4.CorrectAmt) + ^(Decision4.MinusAmt))
+    Decision4.WrongPlus
+      ^Calc(^(Decision4.WrongAmt) + ^(Decision4.PlusAmt))
+    Decision4.WrongMinus
+      ^Calc(^(Decision4.WrongAmt) + ^(Decision4.MinusAmt))
+  )
+  @SetVar(Decision4.Winner Decision4.CorrectPlus)
+  @SetVar(Decision4.WinAmt ^(Decision4.CorrectPlus))
+  ?If (^(Decision4.WinAmt) < ^(Decision4.CorrectMinus)) {
+    @SetVar(Decision4.Winner Decision4.CorrectMinus)
+    @SetVar(Decision4.WinAmt ^(^(Decision4.Winner)))
+  }
+  ?If (^(Decision4.WinAmt) < ^(Decision4.WrongPlus)) {
+    @SetVar(Decision4.Winner Decision4.WrongPlus)
+    @SetVar(Decision4.WinAmt ^(^(Decision4.Winner)))
+  }
+  ?If (^(Decision4.WinAmt) < ^(Decision4.WrongMinus)) {
+    @SetVar(Decision4.Winner Decision4.WrongMinus)
+    @SetVar(Decision4.WinAmt ^(^(Decision4.Winner)))
+  }
+  
+  # If the simulation realizes that the correct answer leads to reward
+  #  or the wrong answer leads to punishment...
+  ?If (~strcmp[^(Decision4.Winner),Decision4.CorrectPlus] |
+       ~strcmp[^(Decision4.Winner),Decision4.WrongMinus]) {
+    @SetVar(
+      Decision4.DiffAmtPlus
+        ^Calc(abs[^(Decision4.WinAmt)-^(Decision4.WrongPlus)])
+      Decision4.DiffAmtMinus
+        ^Calc(abs[^(Decision4.WinAmt)-^(Decision4.CorrectMinus)])
+      Decision4.Correct      1
+    )
+  }
+  # If the simulation thinks that the correct answer leads to punishment
+  #  or the wrong answer leads to reward...
+  ?If (~strcmp[^(Decision4.Winner),Decision4.WrongPlus] |
+       ~strcmp[^(Decision4.Winner),Decision4.CorrectMinus]) {
+    @SetVar(
+      Decision4.DiffAmtPlus
+        ^Calc(abs[^(Decision4.WinAmt)-^(Decision4.CorrectPlus)])
+      Decision4.DiffAmtMinus
+        ^Calc(abs[^(Decision4.WinAmt)-^(Decision4.WrongMinus)])
+      Decision4.Correct      0
+    )
+  }
+  @SetVar(Decision4.DiffAmt ^Calc(min[^(Decision4.DiffAmtPlus),
+                                            ^(Decision4.DiffAmtMinus)]))
+  @PrintVar(Decision4.Winner Decision4.DiffAmt)
+
+  @SetVar(WeightedCoin.Heads -99) # Meaning "not thrown"
+  # If the decision was insignificant, flip a weighted coin
+  ?If (^(Decision4.DiffAmt) <= ^(Decision4.Threshold)) {
+    # Requirements for weighted coin are as follows:
+    #  (1) For DiffAmt = 0, coin is fair
+    #  (2) For DiffAmt > 0, coin is biased towards winner (be it
+    #      correct or incorrect)
+    #  (3) For DiffAmt = Threshold, coin is guaranteed to land "heads"
+    @SetVar(
+      WeightedCoin.CutOff ^(Decision4.DiffAmt)
+      WeightedCoin.Threshold ^(Decision4.Threshold)
+    )
+    ?Read(WeightedCoin.nj)
+    ?If(~^(WeightedCoin.Heads)) {
+      # Choose answer other than what "winner" would predict
+      @SetVar(Decision4.Correct ^Calc(~^(Decision4.Correct)))
+    }
+  }
+}

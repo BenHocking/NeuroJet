@@ -1,0 +1,38 @@
+# In (optional): Setme.Ratio = % of activity governed by externals
+# In:            ni = Number of neurons in the network
+# In:            Activity = % of neurons active on a timestep
+# In:            MidPoint = % of neurons in me to turn on per timestep
+#                  MidPoint defaults to 1
+# Out:           me = number of externally-driven neurons in a pattern
+
+
+?If(~exists[me]) { @CreateVar(me 0) }
+?If(~exists[Setme.Ratio]) { @CreateVar(Setme.Ratio 0.3) }
+
+?If(exists[Setme.Noise]) {
+  @SetVar(
+    MidPoint ^(Setme.Noise)
+    xNoise 1
+    xTestingNoise 1
+  )
+}
+@SetVar(me ^Calc(^(ni) * ^(Activity) * ^(Setme.Ratio) / ^(MidPoint)))
+
+# On noise will turn on a random percent of non-pattern neurons
+# If Setme.OnNoiseMe is not set assume the range of neurons to be all
+# neurons not in this pattern.
+?If(exists[Setme.OnNoiseRatio]) {
+  ?If(~exists[Setme.OnNoiseMe]) {
+    @CreateVar(Setme.OnNoiseMe ^Calc(^(ni)-^(me)))
+  }
+  # Assumption: Setme.OnNoiseProb is only set in this routine, but
+  # this routine can be called multiple times
+  ?If(~exists[Setme.OnNoiseProb]) {
+    @CreateVar(
+      Setme.OnNoiseNi 0
+      Setme.OnNoiseProb 0
+    )
+  }
+  @SetVar(Setme.OnNoiseNi ^Calc(^(ni) * ^(Activity) * ^(Setme.OnNoiseRatio)))
+  @SetVar(Setme.OnNoiseProb ^Calc(^(Setme.OnNoiseNi) / ^(Setme.OnNoiseMe)))
+}

@@ -1,0 +1,15 @@
+# Initialization routine for Block.nj
+# NOTE: This script does NOT set the Block.#.* variables!
+
+@CreateVar(
+  Block.NumOuterLoops     0
+  Block.RandomChoice      0
+  Block.Cur.Seq           0
+  Block.Cur.NumInnerLoops 0
+  Block.MeasureFound      0
+  Block.MeasureCount      0
+  Block.LastTestSequence  .
+  Block.NumLoops          0
+  Block.Phase             0
+  Block.TestSequence      .
+)

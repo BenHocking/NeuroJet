@@ -1,0 +1,524 @@
+#   Example (Progressive Learning) which uses the code
+#   perform3-sim.f
+#   Transverse Patterning for the new version of NeuroJet
+@CreateVar(
+  DecisionFn Decision4
+  TI.NumStimuli 5
+  TI.UseBE 0 # If NumStimuli = 6, experiment probes with either BD or BE
+)
+
+@SetVar(seed 1)
+
+?Read(CommonSettings.nj)
+?Read(Setalpha.nj)
+?Read(^(DecisionFn):.init.nj)
+?Read(Block.init.nj)
+?Read(CreateTIVariables.nj)
+
+@CreateVar(
+  ABsucc 0
+  BCsucc 0
+  CDsucc 0
+  DEsucc 0
+  EFsucc 0
+  BDsucc 0
+  WXsucc 0
+  YZsucc 0
+)
+?If (^(TI.NumStimuli) = 5) {
+  @CreateVar(AEsucc 0)
+}
+?If (^(TI.NumStimuli) = 6) {
+  @CreateVar(
+    AFsucc 0
+    BEsucc 0
+  )
+}
+
+@CreateAnalysis(
+  ABcor [ ABsucc ]
+  BCcor [ BCsucc ]
+  CDcor [ CDsucc ]
+  DEcor [ DEsucc ]
+  BDcor [ BDsucc ]
+  WXcor [ WXsucc ]
+  YZcor [ YZsucc ]
+)
+?If (^(TI.NumStimuli) = 5) {
+  @CreateAnalysis(AEcor [ AEsucc ] )
+}
+?If (^(TI.NumStimuli) = 6) {
+  @CreateAnalysis(
+    EFcor [ EFsucc ]
+    AFcor [ AFsucc ]
+    BEcor [ BEsucc ]
+  )
+}
+
+# If we're not using DecisionP.nj
+?If (~strcmp[^(DecisionFn), Decision] | ~strcmp[^(DecisionFn), Decision4] |
+     ~strcmp[^(DecisionFn), DecisionComplex]) {
+  @SetVar(
+    ^(DecisionFn):.AnswerBegin ^Calc(^(Period)+1) # Where "lower-case" answer
+    ^(DecisionFn):.AnswerEnd ^Calc(^(Period)*2)   #   pattern resides
+  )
+}
+
+# If we're not using Decision.nj
+?If (~strcmp[^(DecisionFn), DecisionP] | ~strcmp[^(DecisionFn), Decision4] |
+     ~strcmp[^(DecisionFn), DecisionComplex]) {
+  @SetVar(
+    ^(DecisionFn):.RewardBegin ^Calc(2*^(Period)+1) # Where "+/-"
+    ^(DecisionFn):.RewardEnd   ^Calc(3*^(Period))   #   pattern resides
+  )
+  @CreateAnalysis(^(DecisionFn):.Analysis [Block.Cur.Seq
+                                           ^(DecisionFn):.CorrectPlus
+                                           ^(DecisionFn):.CorrectMinus
+                                           ^(DecisionFn):.WrongPlus
+                                           ^(DecisionFn):.WrongMinus])
+}
+
+@SeedRNG()
+
+?If (exists[trnActFileName]) { @FileReset(^(trnActFileName)) }
+?If (exists[tstActFileName]) { @FileReset(^(tstActFileName)) }
+@CreateNetwork(-mindelay ^(minAxDelay) -maxdelay ^(maxAxDelay) -dist normal -mean ^(wStart) -std ^(wStdev))
+@WeightAnalysis(-bins 100 -nosum)
+@SaveData(-from WeightBuffer -to preWeightBuff:^(fileSuffix):.dat)
+
+# Modify variables already created in Block.init.nj
+@SetVar(
+  Block.NumOuterLoops       ^(TI.TrainPairs)
+  Block.RandomChoice        0
+)
+# Create blocks for stimulus pairs being trained on
+@CreateVar(
+  Block.Sub1.TestSequence   AB
+  Block.Sub1.PlusSequence   ABaplus
+  Block.Sub1.MinusSequence  ABbminus
+  Block.Sub1.SimSequence    ab.sim
+  Block.Sub1.SuccessMeasure ABsucc
+  Block.Sub2.TestSequence   BC
+  Block.Sub2.PlusSequence   BCbplus
+  Block.Sub2.MinusSequence  BCcminus
+  Block.Sub2.SimSequence    bc.sim
+  Block.Sub2.SuccessMeasure BCsucc
+  Block.Sub3.TestSequence   CD
+  Block.Sub3.PlusSequence   CDcplus
+  Block.Sub3.MinusSequence  CDdminus
+  Block.Sub3.SimSequence    cd.sim
+  Block.Sub3.SuccessMeasure CDsucc
+  Block.Sub4.TestSequence   DE
+  Block.Sub4.PlusSequence   DEdplus
+  Block.Sub4.MinusSequence  DEeminus
+  Block.Sub4.SimSequence    de.sim
+  Block.Sub4.SuccessMeasure DEsucc
+  Block.Number              0 # Not created in init because c/b loop variable
+)
+?If (^(TI.NumStimuli) = 6) {
+  @CreateVar(
+    Block.Sub5.TestSequence   EF
+    Block.Sub5.PlusSequence   EFeplus
+    Block.Sub5.MinusSequence  EFfminus
+    Block.Sub5.SimSequence    ef.sim
+    Block.Sub5.SuccessMeasure EFsucc
+  )
+}
+
+# Phase 1 - repeat 10 trials of each until all success measures are
+#  80% or better
+%(i 1 ^(TI.TrainPairs)) {
+  @CreateVar(Block.Sub:^(i):.NumInnerLoops 10)
+}
+@SetVar(
+  Block.Phase 1
+  TI.Continue 1
+  TI.NumSessions 0
+  TI.Criteria 80 # 80% is our criteria for phase 1 & 2
+)
+?While(^(TI.Continue)) {
+  @SetVar(TI.NumSessions ^Calc(^(TI.NumSessions) + 1))
+  @SetVar(Block.Number ^Calc(^(Block.Number) + 1))
+  ?If(^(TI.NumSessions) <= 10) {
+    ?Read(Block.nj)
+    @Analysis(ABcor BCcor CDcor DEcor)
+    ?If (^(TI.NumStimuli) = 6) { @Analysis(EFcor) }
+    ?Read(TI.CheckContinue.nj)
+  }
+  ?If(^(TI.NumSessions) > 10) {
+    @SetVar(TI.Continue 0) # Bail out - s/b rare case
+  }
+}
+
+?If(^(TI.NumSessions) <= 10) {
+  # Phase 2 - repeat 5 trials of each until all success measures are 80% or better
+  %(i 1 ^(TI.TrainPairs)) {
+    @SetVar(Block.Sub:^(i):.NumInnerLoops 5)
+  }
+  @SetVar(
+    Block.Phase 2
+    TI.Continue 1
+    TI.NumSessions 0
+  )
+  ?While(^(TI.Continue)) {
+    @SetVar(TI.NumSessions ^Calc(^(TI.NumSessions) + 1))
+    @SetVar(Block.Number ^Calc(^(Block.Number) + 1))
+    ?If(^(TI.NumSessions) <= 10) {
+      ?Read(Block.nj)
+      @Analysis(ABcor BCcor CDcor DEcor)
+      ?If (^(TI.NumStimuli) = 6) { @Analysis(EFcor) }
+      ?Read(TI.CheckContinue.nj)
+    }
+    ?If(^(TI.NumSessions) > 10) {
+      @SetVar(TI.Continue 0) # Bail out - s/b rare case
+    }
+  }
+}
+
+?If(^(TI.NumSessions) <= 10) {
+  # Phase 3 - repeat 3 trials of each 3 times until all success measures are 77.7% or better
+  @SetVar(Block.NumOuterLoops ^Calc(3 * ^(TI.TrainPairs)))
+  %(i 1 ^(TI.TrainPairs)) {
+    @SetVar(Block.Sub:^(i):.NumInnerLoops 3)
+    # Copy Sub-blocks 1-TI.TrainPairs twice
+    %(j ^Calc(^(i)+^(TI.TrainPairs)) ^Calc(^(i)+[2*^(TI.TrainPairs)]) ^(TI.TrainPairs)) {
+      @CreateVar(
+        Block.Sub:^(j):.NumInnerLoops  3
+        Block.Sub:^(j):.TestSequence   ^(Block.Sub:^(i):.TestSequence)
+        Block.Sub:^(j):.PlusSequence   ^(Block.Sub:^(i):.PlusSequence)
+        Block.Sub:^(j):.MinusSequence  ^(Block.Sub:^(i):.MinusSequence)
+        Block.Sub:^(j):.SimSequence    ^(Block.Sub:^(i):.SimSequence)
+        Block.Sub:^(j):.SuccessMeasure ^(Block.Sub:^(i):.SuccessMeasure)
+      )
+    }
+  }
+  @SetVar(
+    Block.Phase 3
+    TI.Continue 1
+    TI.NumSessions 0
+    TI.Criteria ^Calc(700/9)) # 7/9 converted to percentage
+  )
+  ?While(^(TI.Continue)) {
+    @SetVar(TI.NumSessions ^Calc(^(TI.NumSessions) + 1))
+    @SetVar(Block.Number ^Calc(^(Block.Number) + 1))
+    ?If(^(TI.NumSessions) <= 10) {
+      ?Read(Block.nj)
+      @Analysis(ABcor BCcor CDcor DEcor)
+      ?If (^(TI.NumStimuli) = 6) { @Analysis(EFcor) }
+      ?Read(TI.CheckContinue.nj)
+    }
+    ?If(^(TI.NumSessions) > 10) {
+      @SetVar(TI.Continue 0) # Bail out - s/b rare case
+    }
+  }
+}
+
+?If(^(TI.NumSessions) <= 10) {
+  # Phase 4 - repeat 1 trial of each 9 times until all success measures are 77.7% or better
+  @SetVar(Block.NumOuterLoops ^Calc(9 * ^(TI.TrainPairs)))
+  %(i 1 ^(TI.TrainPairs)) {
+    @SetVar(Block.Sub:^(i):.NumInnerLoops 1)
+    # Copy Sub-blocks 1-TI.TrainPairs eight times
+    %(j ^Calc(^(i)+^(TI.TrainPairs)) ^Calc(^(i)+[8*^(TI.TrainPairs)]) ^(TI.TrainPairs)) {
+      # For first two sets we only need to update the number of trials
+      # per stimulus pair
+      ?If(^(j) <= [3 * ^(TI.TrainPairs)]) {
+        @SetVar(Block.Sub:^(j):.NumInnerLoops  1)
+      }
+      # For the remaining 6 sets we need to create new variables
+      ?If(^(j) > [3 * ^(TI.TrainPairs)]) {
+        @CreateVar(
+          Block.Sub:^(j):.NumInnerLoops  1
+          Block.Sub:^(j):.TestSequence   ^(Block.Sub:^(i):.TestSequence)
+          Block.Sub:^(j):.PlusSequence   ^(Block.Sub:^(i):.PlusSequence)
+          Block.Sub:^(j):.MinusSequence  ^(Block.Sub:^(i):.MinusSequence)
+          Block.Sub:^(j):.SimSequence    ^(Block.Sub:^(i):.SimSequence)
+          Block.Sub:^(j):.SuccessMeasure ^(Block.Sub:^(i):.SuccessMeasure)
+        )
+      }
+    }
+  }
+  @SetVar(
+    Block.Phase 4
+    TI.Continue 1
+    TI.NumSessions 0
+  )
+  ?While(^(TI.Continue)) {
+    @SetVar(TI.NumSessions ^Calc(^(TI.NumSessions) + 1))
+    @SetVar(Block.Number ^Calc(^(Block.Number) + 1))
+    ?If(^(TI.NumSessions) <= 10) {
+      ?Read(Block.nj)
+      @Analysis(ABcor BCcor CDcor DEcor)
+      ?If (^(TI.NumStimuli) = 6) { @Analysis(EFcor) }
+      ?Read(TI.CheckContinue.nj)
+    }
+    ?If(^(TI.NumSessions) > 10) {
+      @SetVar(TI.Continue 0) # Bail out - s/b rare case
+    }
+  }
+}
+
+?If(^(TI.NumSessions) <= 10) {
+  # Phase 5 - present 18 random stimulus pairs until average success measure is 77.7% or better
+  @SetVar(
+    Block.NumOuterLoops    18
+    Block.RandomChoice     ^(TI.NumStimuli)
+  )
+  @SetVar(
+    Block.Phase 5
+    TI.Continue 1
+    TI.NumSessions 0
+  )
+  ?While(^(TI.Continue)) {
+    @SetVar(TI.NumSessions ^Calc(^(TI.NumSessions) + 1))
+    @SetVar(Block.Number ^Calc(^(Block.Number) + 1))
+    ?If(^(TI.NumSessions) <= 10) {
+      ?Read(Block.nj)
+      @Analysis(ABcor BCcor CDcor DEcor)
+      ?If (^(TI.NumStimuli) = 6) { @Analysis(EFcor) }
+      ?Read(TI.CheckContinue.nj)
+    }
+    ?If(^(TI.NumSessions) > 10) {
+      @SetVar(TI.Continue 0) # Bail out - s/b rare case
+    }
+  }
+}
+
+?If(^(TI.NumSessions) <= 10) {
+ %(i 1 ^(TI.TrainPairs)) {
+  @CreateVar(TI.Pair:^(i):.Count 0) # For making sure we use 9 of each
+ }
+ @CreateVar(
+   TI.NumTestTrials ^Calc(9 * ^(TI.TrainPairs) + 4)
+   TI.Ran 0
+   TI.CurSeq  .
+   TI.LastSeq .
+   TI.SimSeq .
+   TI.PlusSeq .
+   TI.MinusSeq .
+   TI.SucMeas .
+   TI.LoopCnt 0
+ )
+ %(TI.TestType 0 1) {
+  # Phase 6 - 5 sessions each of:
+  #  9 trials of each traning premise pair (AB,BC,CD,DE and maybe EF)
+  #  with BD or BE thrown in at the 8th and (24th or 26th) trial and
+  #  AE or AF thrown in at the 16th and 34th trial
+  # Total number of trials per session is therefore 9*4 + 2 + 2 = 40
+  #  (if not using EF)
+  # This particular set up is based on Elzakker, O'Reilly, and Rudy
+  # (2003)
+  # Phase 7 is the same as Phase 6 but with WX/YZ instead of other
+  #  test pairs
+  @Print( "++++ Phase 6 (Testing Phase) ++++\n" )
+  %(i 1 ^(TI.TrainPairs)) {
+    @SetVar(TI.Pair:^(i):.Count 0) # For making sure we use 9 of each
+  }
+  @PrintVar(TI.TrainPairs TI.NumTestTrials)
+  %(TI.TestSession 1 5) {
+    @Print( "++++ Session " ^(TI.TestSession) " ++++\n" )
+    @SetVar(ABsucc 0 BCsucc 0 CDsucc 0 DEsucc 0)
+    ?If (^(TI.NumStimuli) = 5) {
+      @SetVar(BDsucc 0 AEsucc 0 WXsucc 0 YZsucc 0)
+    }
+    ?If (^(TI.NumStimuli) = 6) {
+      @SetVar(EFsucc 0 AFsucc 0)
+      ?If(^(TI.UseBE)) { @SetVar(BEsucc 0) }
+      ?If(^(TI.UseBE) = 0) { @SetVar(BDsucc 0) }
+    }
+    %(i 1 ^(TI.TrainPairs)) {
+      @SetVar(TI.Pair:^(i):.Count 0) # For making sure we use 9 of each
+    }
+    %(TI.Trial 1 ^(TI.NumTestTrials)) {
+      @SetVar(TI.CurSeq .)
+      ?If([^(TI.Trial) = 8] |
+          [[^(TI.Trial) = 26] & [^(TI.NumStimuli)=5]] |
+          [[^(TI.Trial) = 24] & [^(TI.NumStimuli)=6]]) {
+        ?If(^(TI.TestType)=0) {
+          ?If(^(TI.UseBE)) {
+            @SetVar(
+              TI.CurSeq   BE
+              TI.SimSeq   be.sim
+              TI.PlusSeq  BEbplus
+              TI.MinusSeq BEeminus
+              TI.SucMeas  BEsucc
+            )
+          }
+          ?If(^(TI.UseBE) = 0) {
+            @SetVar(
+              TI.CurSeq   BD
+              TI.SimSeq   bd.sim
+              TI.PlusSeq  BDbplus
+              TI.MinusSeq BDdminus
+              TI.SucMeas  BDsucc
+            )
+          }
+        }
+        ?If(^(TI.TestType)=1) {
+          @SetVar(
+            TI.CurSeq   WX
+            TI.SimSeq   wx.sim
+            TI.PlusSeq  WXwplus
+            TI.MinusSeq WXxminus
+            TI.SucMeas  WXsucc
+          )
+        }
+      }
+      ?If([^(TI.Trial) = 16] | [^(TI.Trial) = 34]) {
+        ?If(^(TI.TestType)=0) {
+          ?If(^(TI.NumStimuli) = 5) {
+            @SetVar(
+              TI.CurSeq   AE
+              TI.SimSeq   ae.sim
+              TI.PlusSeq  AEaplus
+              TI.MinusSeq AEeminus
+              TI.SucMeas  AEsucc
+            )
+          }
+          ?If(^(TI.NumStimuli) = 6) {
+            @SetVar(
+              TI.CurSeq   AF
+              TI.SimSeq   af.sim
+              TI.PlusSeq  AFaplus
+              TI.MinusSeq AFfminus
+              TI.SucMeas  AFsucc
+            )
+          }
+        }
+        ?If(^(TI.TestType)=1) {
+          @SetVar(
+            TI.CurSeq   YZ
+            TI.SimSeq   yz.sim
+            TI.PlusSeq  YZyplus
+            TI.MinusSeq YZzminus
+            TI.SucMeas  YZsucc
+          )
+        }
+      }
+      ?If(~strcmp[^(TI.CurSeq),.]) {
+        @SetVar(TI.Continue 1)
+        @SetVar(TI.LoopCnt 0)
+        ?While(^(TI.Continue)) {
+          @SetVar(TI.Ran ^Calc(randint[1,^(TI.TrainPairs)]))
+          ?If(^(TI.Pair:^(TI.Ran):.Count) >= 9) {
+            @SetVar(TI.LoopCnt ^Calc(^(TI.LoopCnt)+1))
+            @Print(^(Block.Sub:^(TI.Ran):.TestSequence):" already has 9 trials for this session.\n")
+            ?If(^(TI.LoopCnt) > 100) {
+              @PrintVar(Error) # Force a quit
+            }
+          }
+          ?If(^(TI.Pair:^(TI.Ran):.Count) < 9) {
+            @SetVar(
+              TI.CurSeq   ^(Block.Sub:^(TI.Ran):.TestSequence)
+              TI.SimSeq   ^(Block.Sub:^(TI.Ran):.SimSequence)
+              TI.PlusSeq  ^(Block.Sub:^(TI.Ran):.PlusSequence)
+              TI.MinusSeq ^(Block.Sub:^(TI.Ran):.MinusSequence)
+              TI.SucMeas  ^(Block.Sub:^(TI.Ran):.SuccessMeasure)
+              TI.Continue 0
+              TI.Pair:^(TI.Ran):.Count ^Calc(^(TI.Pair:^(TI.Ran):.Count) + 1)
+            )
+            @Print(^(Block.Sub:^(TI.Ran):.TestSequence):" has ":^(TI.Pair:^(TI.Ran):.Count):" trials for this session.\n")
+          }
+        }
+      }
+      # OK, now we've figured out which sequence to test on - TI.CurSeq
+      ?If (strcmp[^(TI.CurSeq), ^(TI.LastSeq)]) {
+        # Set last decision to be correct to NOT bias decision (WARNING: This
+        # might be decision-rule specific!)
+        @SetVar(^(DecisionFn):.Correct 1)
+        @SetVar(TI.LastSeq ^(TI.CurSeq))
+      }
+      ?If (~strcmp[^(DecisionFn), Decision] |
+           ~strcmp[^(DecisionFn), DecisionComplex]) {
+        @SetVar(
+          ^(DecisionFn):.TestSequence ^(TI.CurSeq):test
+          ^(DecisionFn):.SimSequence ^(TI.SimSeq)
+        )
+      }
+      ?If (~strcmp[^(DecisionFn), DecisionP]) {
+        @SetVar(
+          ^(DecisionFn):.TestSequence ^(TI.CurSeq)
+          ^(DecisionFn):.TestCorrect ^(TI.CurSeq):correct
+          ^(DecisionFn):.TestWrong ^(TI.CurSeq):wrong
+        )
+      }
+      ?Read(^(DecisionFn):.nj)
+      ?If (^(^(DecisionFn):.Correct) = 1) {
+        @SetVar(^(TI.SucMeas) ^Calc(^(^(TI.SucMeas))+1))
+        @Train(-name ^(TI.PlusSeq) -trials 1 -nocomp)
+      }
+      ?If (^(^(DecisionFn):.Correct) = 0) {
+        @Train(-name ^(TI.MinusSeq) -trials 1 -nocomp)
+      }
+      @PrintVar(AveTrainAct Activity)
+    }
+    @SetVar(
+      ABsucc ^Calc(^(ABsucc)*100/9)
+      BCsucc ^Calc(^(BCsucc)*100/9)
+      CDsucc ^Calc(^(CDsucc)*100/9)
+      DEsucc ^Calc(^(DEsucc)*100/9)
+    )
+    @Analysis(ABcor BCcor CDcor DEcor)
+    ?If(^(TI.TestType)=1) {
+      @SetVar(WXsucc ^Calc(^(WXsucc)*100/2))
+      @SetVar(YZsucc ^Calc(^(YZsucc)*100/2))
+      @Analysis(WXcor YZcor)
+    }
+    ?If ([^(TI.TestType)=0] & [^(TI.NumStimuli)=5]) {
+      @SetVar(BDsucc ^Calc(^(BDsucc)*100/2))
+      @SetVar(AEsucc ^Calc(^(AEsucc)*100/2))
+      @Analysis(BDcor AEcor)
+    }
+    ?If (^(TI.NumStimuli) = 6) {
+      @SetVar(EFsucc ^Calc(^(EFsucc)*100/9))
+      @Analysis(EFcor)
+      ?If(^(TI.TestType)=0) {
+        @SetVar(AFsucc ^Calc(^(AFsucc)*100/9))
+        @Analysis(AFcor)
+        ?If(^(TI.UseBE)) {
+          @SetVar(BEsucc ^Calc(^(BEsucc)*100/2))
+          @Analysis(BEcor)
+        }
+        ?If(^(TI.UseBE) = 0) {
+          @SetVar(BDsucc ^Calc(^(BDsucc)*100/2))
+          @Analysis(BDcor)
+        }
+      }
+    }
+  }
+ }
+}
+
+# Need to add AE, BD, etc.
+
+@SaveData(-from ABcor -to AB.dat)
+@SaveData(-from BCcor -to BC.dat)
+@SaveData(-from CDcor -to CD.dat)
+@SaveData(-from DEcor -to DE.dat)
+?If(^(TI.NumStimuli) = 5) {
+  @SaveData(-from BDcor -to BD.dat)
+  @SaveData(-from AEcor -to AE.dat)
+}
+@SaveData(-from WXcor -to WX.dat)
+@SaveData(-from YZcor -to YZ.dat)
+?If(^(TI.NumStimuli) = 6) {
+  @SaveData(-from EFcor -to EF.dat)
+  @SaveData(-from AFcor -to AF.dat)
+  ?If(^(TI.UseBE)) {
+    @SaveData(-from BEcor -to BE.dat)
+  }
+  ?If(^(TI.UseBE) = 0) {
+    @SaveData(-from BDcor -to BD.dat)
+  }
+}
+@SaveData(-from K0 -to Kvals:^(fileSuffix):.dat)
+@SaveData(-from KFB -to Kvals:^(fileSuffix):.dat -append)
+@SaveData(-from KFF -to Kvals:^(fileSuffix):.dat -append)
+@SaveData(-from TrainingKWeights -to wiIFB:^(fileSuffix):.dat)
+
+?If (~strcmp[^(DecisionFn), DecisionP] | ~strcmp[^(DecisionFn), Decision4] |
+     ~strcmp[^(DecisionFn), DecisionComplex]) {
+  @SaveData(-from ^(DecisionFn):.Analysis -to ^(DecisionFn):.Analysis.dat)
+}
+@WeightAnalysis(-bins 100 -nosum)
+@SaveData(-from WeightBuffer -to postWeightBuff:^(fileSuffix):.dat)

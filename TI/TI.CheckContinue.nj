@@ -1,0 +1,29 @@
+@SetVar(
+  TI.Continue 0 # Assume success
+)
+# Phases 1-4
+?If(^(Block.RandomChoice) = 0) {
+  %(i 1 ^(TI.TrainPairs)) {
+    # To understand next if statement, consider this:
+    #  ^(Block.Sub1.SuccessMeasure) yields ABsucc, so
+    #  ^(^(Block.Sub1.SuccessMeasure)) = ^(ABsucc)
+    ?If(^(^(Block.Sub:^(i):.SuccessMeasure)) < ^(TI.Criteria)) {
+      @SetVar(TI.Continue 1) # Failure, continue training
+    }
+  }
+}
+# Phase 5
+?If(^(Block.RandomChoice) > 0) {
+  @SetVar(TI.MeanSuccess 0)
+  %(i 1 ^(TI.TrainPairs)) {
+    @SetVar(
+      TI.MeanSuccess
+        ^Calc(^(TI.MeanSuccess)+[^(^(Block.Sub:^(i):.SuccessMeasure))*^(Block.Sub:^(i):.MeasureCount)])
+    )
+  }
+  # Calculate a weighted mean
+  @SetVar(TI.MeanSuccess ^Calc(^(TI.MeanSuccess) / ^(Block.NumOuterLoops)))
+  ?If(^(TI.MeanSuccess) < ^(TI.Criteria)) {
+    @SetVar(TI.Continue 1) # Failure, continue training
+  }
+}

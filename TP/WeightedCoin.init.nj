@@ -1,0 +1,12 @@
+# Include this file if you want to use WeightedCoin.nj
+
+?If(~exists[WeightedCoin.IsInit]) {
+  @CreateVar(
+    WeightedCoin.CutOff    0
+    WeightedCoin.Threshold 0
+    WeightedCoin.RandAmt   0
+    WeightedCoin.Heads     0
+    WeightedCoin.Noisy     0
+    WeightedCoin.IsInit    1
+  )
+}

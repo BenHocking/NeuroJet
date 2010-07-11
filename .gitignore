@@ -1,13 +1,11 @@
 *~
-*.nj
 *.o
 *.m
 *.tgz
-build
+build*
 debug.build
 Attic
 Test
-TP
 TP_small
 sweepTP
 testArrayAlg

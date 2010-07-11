@@ -1,0 +1,4 @@
+# In: Period (pre-defined NeuroJet variable)
+# Out: alpha (pre-defined NeuroJet variable)
+
+@SetVar(alpha ^Calc(exp[-1/^(Period)]))

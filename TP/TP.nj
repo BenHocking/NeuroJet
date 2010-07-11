@@ -1,0 +1,231 @@
+#   Example (Progressive Learning) which uses the code
+#   perform3-sim.f
+#   Transverse Patterning for the new version of NeuroJet
+@CreateVar(DecisionFn Decision4)
+
+?Read(CommonSettings.nj)
+?Read(Setalpha.nj)
+?Read(^(DecisionFn):.init.nj)
+?Read(Block.init.nj)
+?Read(CreateTPVariables.nj)
+
+@CreateVar(ABsucc 0 BCsucc 0 CAsucc 0)
+@CreateAnalysis(ABcor [ ABsucc ] BCcor [ BCsucc ] CAcor [ CAsucc ])
+
+?If(~exists[sniffDur]) { @CreateVar(sniffDur ^(Period)) }
+?If(~exists[chooseDur]) { @CreateVar(chooseDur ^(Period)) }
+?If(~exists[choiceBegin]) { @CreateVar(choiceBegin 2) }
+?If(~exists[choiceEnd]) { @CreateVar(choiceEnd ^Calc(^(sniffDur)+^(chooseDur))) }
+?If(~exists[eatDur]) { @CreateVar(eatDur ^(Period)) }
+?If(~exists[rewardBegin]) { @CreateVar(rewardBegin 3) }
+?If(~exists[rewardEnd]) { @CreateVar(rewardEnd ^Calc(^(sniffDur)+^(chooseDur)+^(eatDur))) }
+
+# If we're not using DecisionP.nj
+?If (~strcmp[^(DecisionFn), Decision] | ~strcmp[^(DecisionFn), Decision4] |
+     ~strcmp[^(DecisionFn), DecisionComplex]) {
+  @SetVar(
+    ^(DecisionFn):.AnswerBegin ^Calc(^(choiceBegin)) # Where "lower-case" answer
+    ^(DecisionFn):.AnswerEnd ^Calc(^(choiceEnd))     #   pattern resides
+  )
+}
+
+# If we're not using Decision.nj
+?If (~strcmp[^(DecisionFn), DecisionP] | ~strcmp[^(DecisionFn), Decision4] |
+     ~strcmp[^(DecisionFn), DecisionComplex]) {
+  @SetVar(
+    ^(DecisionFn):.RewardBegin ^Calc(^(rewardBegin)) # Where "+/-"
+    ^(DecisionFn):.RewardEnd   ^Calc(^(rewardEnd))   #   pattern resides
+  )
+  @CreateAnalysis(^(DecisionFn):.Analysis [Block.Cur.Seq
+                                           ^(DecisionFn):.CorrectPlus
+                                           ^(DecisionFn):.CorrectMinus
+                                           ^(DecisionFn):.WrongPlus
+                                           ^(DecisionFn):.WrongMinus
+                                           ^(DecisionFn):.CorrectAmt
+                                           ^(DecisionFn):.WrongAmt
+                                           ^(DecisionFn):.PlusAmt
+                                           ^(DecisionFn):.MinusAmt
+                                           ^(DecisionFn):.FreePass
+                                           ^(DecisionFn):.DiffAmt
+                                           ^(DecisionFn):.WinAmt
+                                           ^(DecisionFn):.DiffAmtPlus
+                                           ^(DecisionFn):.DiffAmtMinus
+                                           WeightedCoin.Heads])
+}
+
+@SeedRNG()
+
+?If (exists[trnActFileName]) { @FileReset(^(trnActFileName)) }
+?If (exists[tstActFileName]) { @FileReset(^(tstActFileName)) }
+@CreateNetwork(-mindelay ^(minAxDelay) -maxdelay ^(maxAxDelay) -dist normal -mean ^(wStart) -std ^(wStdev))
+@WeightAnalysis(-bins 100 -nosum)
+@SaveData(-from WeightBuffer -to preWeightBuff:^(fileSuffix):.dat)
+
+@SetVar(Reset 0)
+
+# BLOCK 1-4
+
+# Do some preliminary work for blocks 1-4
+@CreateVar(
+  Block.Sub1.NumInnerLoops  30
+  Block.Sub1.TestSequence   AB
+  Block.Sub1.PlusSequence   ABaplus
+  Block.Sub1.MinusSequence  ABbminus
+  Block.Sub1.SimSequence    ab.sim
+  Block.Sub1.SuccessMeasure ABsucc
+)
+
+# Modify variables already created in Block.init.nj
+@SetVar(
+  Block.NumOuterLoops       1
+  Block.RandomChoice        0
+)
+
+%(Block.Number 1 4) {
+  ?Read(Block.nj)
+  @Analysis(ABcor BCcor CAcor)
+}
+
+# Prepare for blocks 5 and 6
+# Alternate 5 iterations of AB, 20 of BC, and then 5 of AB
+@SetVar(
+  Block.NumOuterLoops       3
+  Block.Sub1.NumInnerLoops  5
+)
+
+# Need to create Block.Sub2 and Block.Sub3 since this is the first time
+#   using them.
+@CreateVar(
+  Block.Sub2.NumInnerLoops  20
+  Block.Sub2.TestSequence   BC
+  Block.Sub2.PlusSequence   BCbplus
+  Block.Sub2.MinusSequence  BCcminus
+  Block.Sub2.SimSequence    bc.sim
+  Block.Sub2.SuccessMeasure BCsucc
+  Block.Sub3.NumInnerLoops  5
+  Block.Sub3.TestSequence   AB
+  Block.Sub3.PlusSequence   ABaplus
+  Block.Sub3.MinusSequence  ABbminus
+  Block.Sub3.SimSequence    ab.sim
+  Block.Sub3.SuccessMeasure ABsucc
+)
+
+%(Block.Number 5 6) {
+  ?Read(Block.nj)
+  @Analysis(ABcor BCcor CAcor)
+}
+
+# Set up for block 7
+# Alternate AB-BC 3 times for 5 loops each (a total of 6 inner blocks)
+@SetVar(
+  Block.NumOuterLoops      6
+  Block.Sub2.NumInnerLoops 5
+)
+
+# Inner blocks 4-6 are identical to the correspond block 2 earlier
+@CreateVar(RelSubBlock .) # For use within this block
+%(SetBlockVar 4 6) {
+  # Create a short-hand for "block 2 earlier"
+  @SetVar(RelSubBlock Block.Sub:^Calc(^(SetBlockVar)-2))
+  @CreateVar(
+    Block.Sub:^(SetBlockVar):.NumInnerLoops  ^(^(RelSubBlock):.NumInnerLoops)
+    Block.Sub:^(SetBlockVar):.TestSequence   ^(^(RelSubBlock):.TestSequence)
+    Block.Sub:^(SetBlockVar):.PlusSequence   ^(^(RelSubBlock):.PlusSequence)
+    Block.Sub:^(SetBlockVar):.MinusSequence  ^(^(RelSubBlock):.MinusSequence)
+    Block.Sub:^(SetBlockVar):.SimSequence    ^(^(RelSubBlock):.SimSequence)
+    Block.Sub:^(SetBlockVar):.SuccessMeasure ^(^(RelSubBlock):.SuccessMeasure)
+  )
+}
+
+%(Block.Number 7 7) {
+  ?Read(Block.nj)
+  @Analysis(ABcor BCcor CAcor)
+}
+
+# Set up for block 8
+# Alternate 5 iterations of AB, 20 of CA, and then 5 of BC
+@SetVar(
+  Block.NumOuterLoops       3
+  Block.Sub2.NumInnerLoops  20
+  Block.Sub2.TestSequence   CA
+  Block.Sub2.PlusSequence   CAcplus
+  Block.Sub2.MinusSequence  CAaminus
+  Block.Sub2.SimSequence    ca.sim
+  Block.Sub2.SuccessMeasure CAsucc
+  Block.Sub3.NumInnerLoops  5
+  Block.Sub3.TestSequence   BC
+  Block.Sub3.PlusSequence   BCbplus
+  Block.Sub3.MinusSequence  BCcminus
+  Block.Sub3.SimSequence    bc.sim
+  Block.Sub3.SuccessMeasure BCsucc
+)
+
+%(Block.Number 8 8) {
+  ?Read(Block.nj)
+  @Analysis(ABcor BCcor CAcor)
+}
+
+# Set up for block 9
+# Alternate AB,BC,CA twice for 5 loops each
+@SetVar(
+  Block.NumOuterLoops       6
+  Block.Sub2.NumInnerLoops  5
+  Block.Sub2.TestSequence   BC
+  Block.Sub2.PlusSequence   BCbplus
+  Block.Sub2.MinusSequence  BCcminus
+  Block.Sub2.SimSequence    bc.sim
+  Block.Sub2.SuccessMeasure BCsucc
+  Block.Sub3.TestSequence   CA
+  Block.Sub3.PlusSequence   CAcplus
+  Block.Sub3.MinusSequence  CAaminus
+  Block.Sub3.SimSequence    ca.sim
+  Block.Sub3.SuccessMeasure CAsucc
+)
+
+# This time, inner-blocks 4-6 match inner-blocks 1-3
+%(SetBlockVar 4 6) {
+  # Create a short-hand for "block 3 earlier"
+  @SetVar(RelSubBlock Block.Sub:^Calc(^(SetBlockVar)-3))
+  @SetVar(
+    Block.Sub:^(SetBlockVar):.NumInnerLoops  ^(^(RelSubBlock):.NumInnerLoops)
+    Block.Sub:^(SetBlockVar):.TestSequence   ^(^(RelSubBlock):.TestSequence)
+    Block.Sub:^(SetBlockVar):.PlusSequence   ^(^(RelSubBlock):.PlusSequence)
+    Block.Sub:^(SetBlockVar):.MinusSequence  ^(^(RelSubBlock):.MinusSequence)
+    Block.Sub:^(SetBlockVar):.SimSequence    ^(^(RelSubBlock):.SimSequence)
+    Block.Sub:^(SetBlockVar):.SuccessMeasure ^(^(RelSubBlock):.SuccessMeasure)
+  )
+}
+
+%(Block.Number 9 9) {
+  ?Read(Block.nj)
+  @Analysis(ABcor BCcor CAcor)
+}
+
+@SetVar(
+  Block.NumOuterLoops    30
+  Block.RandomChoice     3
+)
+
+%(Block.Number 10 10) {
+  ?Read(Block.nj)
+  @Analysis(ABcor BCcor CAcor)
+}
+
+@SaveData(-from ABcor -to AB.dat)
+@SaveData(-from BCcor -to BC.dat)
+@SaveData(-from CAcor -to CA.dat)
+@SaveData(-from K0 -to Kvals:^(fileSuffix):.dat)
+@SaveData(-from KFB -to Kvals:^(fileSuffix):.dat -append)
+@SaveData(-from KFF -to Kvals:^(fileSuffix):.dat -append)
+
+# wiIFBxxx.dat can take up a lot of space...
+#@SetVar(mu 0)
+#@Train(-trials 1 -name AB)
+#@SaveData(-from TrainingKWeights -to wiIFB:^(fileSuffix):.dat)
+
+?If (~strcmp[^(DecisionFn), DecisionP] | ~strcmp[^(DecisionFn), Decision4] |
+     ~strcmp[^(DecisionFn), DecisionComplex]) {
+  @SaveData(-from ^(DecisionFn):.Analysis -to ^(DecisionFn):.Analysis.dat)
+}
+@WeightAnalysis(-bins 100 -nosum)
+@SaveData(-from WeightBuffer -to postWeightBuff:^(fileSuffix):.dat)

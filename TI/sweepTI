@@ -1,0 +1,9 @@
+for i in {1..10}
+do
+  mkdir -p TI_${i}
+  cp -p *.nj TI_${i}
+  psed -e "s/SetVar(seed [0-9]*)/SetVar\(seed ${i}\)/g" < CommonSettings.nj > TI_${i}/CommonSettings.nj
+  cd TI_${i}
+  ../../NeuroJet TI.nj > TI_${i}.out
+  cd ..
+done

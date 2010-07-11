@@ -1,0 +1,37 @@
+# In:   WeightedCoin.CutOff     Amount to bias coin by, relative to threshold
+#       WeightedCoin.Threshold  Used to determine bias
+#       WeightedCoin.Noisy      Whether or not to report results of
+#                               each coin toss
+# Temp: WeightedCoin.RandAmt    Random value used to determine heads/tails
+# Out:  WeightedCoin.Heads      Outcome of coin flip
+#
+# A random value is chosen between -Threshold and Threshold. If that
+# value is less than CutOff, then that is interpreted as heads,
+# otherwise it's tails. So, if CutOff is half of Threshold, then the
+# odds of getting a heads is 3/4, since 3/4 of the floats between -1
+# and 1 are less than 1/2.
+
+?If (^(WeightedCoin.CutOff) <= ^(WeightedCoin.Threshold)) {
+  # Requirements for weighted coin are as follows:
+  #  (1) For CutOff = 0, coin is fair
+  #  (2) For CutOff > 0, coin is biased towards heads
+  #  (3) For CutOff = Threshold, coin is guaranteed to land heads
+  ?If(^(WeightedCoin.CutOff) > 0) {
+    @SetVar(WeightedCoin.RandAmt ^Calc(uniform[-^(WeightedCoin.Threshold),^(WeightedCoin.Threshold)]))
+    @SetVar(WeightedCoin.Heads 0)
+    # The larger CutOff is (relative to Threshold), the more likely heads will come up
+    ?If(^(WeightedCoin.RandAmt) < ^(WeightedCoin.CutOff)) {
+      @SetVar(WeightedCoin.Heads 1)
+    }
+  }
+  ?If(^(WeightedCoin.CutOff) <= 0) {
+    # Only a problem if CutOff and Threshold are both zero, but works
+    # anytime CutOff is zero.
+    @SetVar(WeightedCoin.Heads ^Calc(randint[0,1]))
+  }
+  ?If(^(WeightedCoin.Noisy)) {
+    @Print("Weighted coin was thrown ... ")
+    ?If(^(WeightedCoin.Heads)) { @Print("heads!\n") }
+    ?If(~^(WeightedCoin.Heads)) { @Print("tails!\n") }
+  }
+}
