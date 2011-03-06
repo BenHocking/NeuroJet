@@ -51,11 +51,10 @@ if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-# Make sure the compiler can find include files. Need to find a better way of doing this
-include_directories(${NeuroJet_SOURCE_DIR})
+include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural)
 
-file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
-file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
+file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
+file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 if(NOT (MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode"))
   list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/Parallel.cpp)
   list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/ParallelRand.cpp)
@@ -70,9 +69,13 @@ endif()
 set(FILES ${SRC} ${INCLUDES})
 set(TEST_DIR ${NeuroJet_SOURCE_DIR}/Test)
 
+enable_testing()
+
 # Unit tests
 add_executable(ArgFunctsTest ${TEST_DIR}/ArgFunctsTest.cpp ${NeuroJet_SOURCE_DIR}/Output.cpp)
+add_test(ArgFunctsTest ArgFunctsTest)
 add_executable(StringTest ${TEST_DIR}/StringTest.cpp)
+add_test(StringTest StringTest)
 
 # Main executable
 add_executable(NeuroJet ${FILES})

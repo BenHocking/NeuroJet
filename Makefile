@@ -10,6 +10,8 @@ endif
 BLD=build
 CACHE=build/CMakeCache.txt
 
+.PHONY: test clean xcode xcode2 vs
+
 compile:
 	if [ ! -d $(BLD) ]; then mkdir $(BLD); fi
 	(cd $(BLD); cmake $(CMAKE_FLAGS) ..; make)
@@ -26,8 +28,7 @@ mpi:
 	if [ ! -d $(MBLD) ]; then mkdir $(MBLD); fi
 	(cd $(MBLD); cmake -DMULTIPROC=true $(CMAKE_FLAGS) ..; make)
 
-test:
-	if [ ! -d $(BLD) ]; then $(MAKE) compile; fi
+test: compile
 	$(MAKE) -C $(BLD) test
 
 clean:
@@ -41,8 +42,7 @@ xcode:
 	mkdir $(XBLD)
 	(cd $(XBLD); cmake -G"Xcode" ..; open NeuroJet.xcodeproj)
 
-xcode2: 
-	if [ ! -d $(BLD) ]; then $(MAKE) compile; fi
+xcode2: compile
 	if [ -e $(CACHE) ]; then rm $(CACHE); fi
 	(cd $(BLD); cmake -Wno-dev -G"Xcode" ..)
 
