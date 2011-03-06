@@ -358,7 +358,7 @@ void PrintVar(ArgListType &arg) //AT_FUN
          if (varType == 'i') {
             Output::Out() << SystemVar::GetIntVar(curArg) << std::endl;
          } else if (varType == 'f') {
-            Output::Out() << setprecision(6) << SystemVar::GetFloatVar(curArg) << std::endl;
+            Output::Out() << setprecision(10) << SystemVar::GetFloatVar(curArg) << std::endl;
          } else if (varType == 's') {
             Output::Out() << SystemVar::GetStrVar(curArg) << std::endl;
          } else if (varType == 'I') {

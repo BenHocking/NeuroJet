@@ -140,9 +140,9 @@ typedef std::vector<xInput> xInputList;
 typedef xInputList::const_iterator xInputListCIt;
 typedef xInputList::iterator xInputListIt;
 
-inline DataList UIPtnToDataList(const UIVector &ptnIn) {
+inline DataList UIPtnToDataList(const UIVector &ptnIn, unsigned int defaultNi = 0) {
    // assumes ptnIn is sorted
-   unsigned int numNeurons = (ptnIn.size()==0) ? 0 : (ptnIn.back()+1);
+   unsigned int numNeurons = std::max((ptnIn.size()==0) ? 0 : (ptnIn.back() + 1), defaultNi);
    DataList toReturn(numNeurons);
    for (UIVectorCIt PCIt = ptnIn.begin(); PCIt != ptnIn.end(); PCIt++)
       toReturn[*PCIt]=1.0f;
@@ -167,13 +167,13 @@ inline UIVector xInputToUIPtn(const xInput &xIn) {
    return toReturn;
 }
 
-inline DataMatrix UISeqToMatrix(const UIPtnSequence &seqIn) {
+inline DataMatrix UISeqToMatrix(const UIPtnSequence &seqIn, unsigned int defaultNi = 0) {
    unsigned int mtxSize = seqIn.size();
    DataMatrix toReturn(mtxSize);
    DataMatrixIt DMIt = toReturn.begin();
    // (Willow) This is where the problem is
    for (UIPtnSequenceCIt SeqConstIterator = seqIn.begin(); SeqConstIterator != seqIn.end(); SeqConstIterator++, DMIt++)
-      *DMIt = UIPtnToDataList(*SeqConstIterator);
+     *DMIt = UIPtnToDataList(*SeqConstIterator, defaultNi);
    return toReturn;
 }
 
@@ -187,8 +187,8 @@ inline UIPtnSequence MatrixToUISeq(const DataMatrix &mtxIn) {
 }
 
 // Converts from a list of "neuron numbers" to a boolean vector (Pattern)
-inline Pattern UIVectorToPtn(const UIVector &v, unsigned int numNeurons=0) {
-   if ((numNeurons == 0) && (v.size() > 0)) numNeurons = v.back()+1; // assumes v is sorted
+inline Pattern UIVectorToPtn(const UIVector &v, unsigned int defaultNi = 0) {
+   unsigned int numNeurons = ((defaultNi == 0) && (v.size() > 0)) ? v.back() + 1 : defaultNi; // assumes v is sorted
    Pattern toReturn(numNeurons, false);
    for (UIVectorCIt it = v.begin(); it != v.end(); ++it) {
       toReturn[*it] = true;
@@ -207,10 +207,10 @@ inline UIVector PtnToUIVector(const Pattern &p) {
 
 // Converts from a list of a list of "neuron numbers" to a list
 // of boolean vectors (Patterns)
-inline Sequence UISeqToPtnSeq(const UIPtnSequence &s, unsigned int numNeurons=0) {
+inline Sequence UISeqToPtnSeq(const UIPtnSequence &s, unsigned int defaultNi = 0) {
    Sequence toReturn(0);
    for (UIPtnSequenceCIt it = s.begin(); it != s.end(); ++it) {
-      toReturn.push_back(UIVectorToPtn(*it, numNeurons));
+      toReturn.push_back(UIVectorToPtn(*it, defaultNi));
    }
    return toReturn;
 }

@@ -1007,8 +1007,10 @@ void CalcSomaResponse(const xInput &curPattern, DataMatrix &IzhVValues,
 	unsigned int numIzhPts = IzhVValues.size();
    const bool trackIzhBuffs = (SystemVar::GetIntVar("IzhTrackData") != 0);
    if (trackIzhBuffs) {
-      IzhVValues.resize(numIzhPts + numIntegrates, DataList(ni, 0.0));
-      IzhUValues.resize(numIzhPts + numIntegrates, DataList(ni, 0.0));
+		//      IzhVValues.resize(numIzhPts + numIntegrates, DataList(ni, 0.0));
+		//      IzhUValues.resize(numIzhPts + numIntegrates, DataList(ni, 0.0));
+		IzhVValues.clear();
+		IzhUValues.clear();
 	}
    for (PopulationCIt PCIt = Population::Member.begin();
          PCIt != Population::Member.end(); ++PCIt) {
@@ -1028,9 +1030,8 @@ void CalcSomaResponse(const xInput &curPattern, DataMatrix &IzhVValues,
          const string IzhNeuronType = nType->getParameter("IzhType", SystemVar::GetStrVar("IzhType"));
          for (unsigned int t = 0; t < numIntegrates; ++t) {
             const unsigned int offset = PCIt->getFirstNeuron();
-				DataList dummyDL; // Just for the compiler to be happy if we're not tracking IzhBuffs
-				DataList& curIzhVValues = trackIzhBuffs ? IzhVValues[++numIzhPts] : dummyDL;
-				DataList& curIzhUValues = trackIzhBuffs ? IzhUValues[numIzhPts] : dummyDL;
+   			DataList curIzhVValues = trackIzhBuffs ? DataList(ni, 0.0) : DataList();
+   			DataList curIzhUValues = trackIzhBuffs ? DataList(ni, 0.0) : DataList();
             for (unsigned int nrn = PCIt->getFirstNeuron(); nrn <= PCIt->getLastNeuron(); ++nrn) {
                const bool forceExt = (t==0) && PCIt->forceExt();
                //FLEX: Allow different decay models for VarKConductance(Izhikevich?)
@@ -1065,6 +1066,8 @@ void CalcSomaResponse(const xInput &curPattern, DataMatrix &IzhVValues,
                   curIzhUValues[UNSHUFFLEIFMULTIPROC(nrn)-offset] = IzhU[nrn];
                }
             }
+            IzhVValues.push_back(curIzhVValues);
+            IzhUValues.push_back(curIzhUValues);
          }
       } else {
          const float theta = SystemVar::GetFloatVar("theta");
@@ -3577,7 +3580,8 @@ void CopyData (ArgListType &arg) //AT_FUN
    const char oldVarType = isFn(dataName) ? 'f' : SystemVar::GetVarType(dataName);
    string oldType; // for messages
    if (oldVarType == 'S') {
-      OldMat = UISeqToMatrix(SystemVar::getSequence(OldMatName, FunctionName, ComL));
+      const int ni = SystemVar::GetIntVar("ni");
+      OldMat = UISeqToMatrix(SystemVar::getSequence(OldMatName, FunctionName, ComL), ni);
       IsOldSeq = true;
       oldType = "sequence";
    } else if (oldVarType == 'M') {
@@ -4676,12 +4680,14 @@ void SaveWeights(ArgListType &arg) //AT_FUN
                               "make the mfile to\n\t\t\t load in weights and "
                               "connections to Matlab\n\t\t\t only called once per script",
                               0);
+   static FlagArg AddComments ("-Comments", "-noComments",
+										 "add comments to the weights file", 0);
    static TArg<string> FileName("-to", "file name", "wij.dat");
    static CommandLine ComL(FunctionName);
    if (argunset) {
       ComL.HelpSet("@SaveWeights( ... ) saves the weights to file.\n");
       ComL.StrSet(1, &FileName);
-      ComL.FlagSet(1, &MakeMatlab);
+      ComL.FlagSet(2, &MakeMatlab, &AddComments);
       argunset = false;
    }
    ComL.Process(arg, Output::Err());
@@ -4703,7 +4709,9 @@ void SaveWeights(ArgListType &arg) //AT_FUN
    IFROOTNODE {
       Output::Out() << "Saving weights to file " << FileName.getValue() << std::endl;
       outFile << ni << "\n";
-      outFile << "# Fan-in synaptic count per neuron:\n";
+      if (AddComments.getValue()) {
+        outFile << "# Fan-in synaptic count per neuron:\n";
+		}
 
       // rows are neurons, columns are nodes
       UIMatrix nodeConn = ParallelInfo::rcvNodeConn(Shuffle, FanInCon);
@@ -4714,7 +4722,9 @@ void SaveWeights(ArgListType &arg) //AT_FUN
          outFile << totalConn[i] << " ";
       }
       outFile << "\n";
-      outFile << "# Fan-in synapses (pre-synaptic neuron number)\n";
+      if (AddComments.getValue()) {
+        outFile << "# Fan-in synapses (pre-synaptic neuron number)\n";
+		}
 
       for (unsigned int i = 0; i < ni; i++) {
          UIVector nrnConn = ParallelInfo::rcvNrnConn(nodeConn.at(i), i, Shuffle, UnShuffle, FanInCon, inMatrix);
@@ -4724,17 +4734,21 @@ void SaveWeights(ArgListType &arg) //AT_FUN
          outFile << "\n";
       }
 
-      outFile << "# Fan-in synaptic weights\n";
+      if (AddComments.getValue()) {
+        outFile << "# Fan-in synaptic weights\n";
+		}
       for (unsigned int i = 0; i < ni; i++) {
          DataList nrnWij = ParallelInfo::rcvNrnWij(nodeConn.at(i), i, Shuffle, FanInCon, inMatrix);
          for (DataListCIt it = nrnWij.begin(); it != nrnWij.end(); ++it) {
-            outFile << *it << " ";
+            outFile << setprecision(15) << *it << " ";
          }
          outFile << "\n";
       }
 
       if (maxAxonalDelay > defMaxAxonalDelay) {
-         outFile << "# Fan-in axonal delays\n";
+         if (AddComments.getValue()) {
+           outFile << "# Fan-in axonal delays\n";
+			}
          for (unsigned int i = 0; i < ni; i++) {
             UIVector nrnAij = ParallelInfo::rcvNrnAij(nodeConn.at(i), i, Shuffle, FanInCon, inMatrix, FanOutCon, outMatrix,
                                minAxonalDelay, maxAxonalDelay);
@@ -4755,28 +4769,36 @@ void SaveWeights(ArgListType &arg) //AT_FUN
 #else
    Output::Out() << "Saving weights to file " << FileName.getValue() << std::endl;
    outFile << ni << "\n";
-   outFile << "# Fan-in synaptic count per neuron:\n";
+   if (AddComments.getValue()) {
+      outFile << "# Fan-in synaptic count per neuron:\n";
+	}
    for (unsigned int connectCol = 0; connectCol < ni; ++connectCol) {
       outFile << FanInCon.at(connectCol) << " ";
    }
    outFile << "\n";
-   outFile << "# Fan-in synapses (pre-synaptic neuron number)\n";
+   if (AddComments.getValue()) {
+      outFile << "# Fan-in synapses (pre-synaptic neuron number)\n";
+	}
    for (unsigned int conRow = 0; conRow < ni; ++conRow) {
       for (unsigned int conCol = 0; conCol < FanInCon.at(conRow); ++conCol) {
          outFile << inMatrix[conRow][conCol].getSrcNeuron() << ' ';
       }
       outFile << "\n";
    }
-   outFile << "# Fan-in synaptic weights\n";
+   if (AddComments.getValue()) {
+      outFile << "# Fan-in synaptic weights\n";
+	}
    for (unsigned int weightRow = 0; weightRow < ni; ++weightRow) {
       DendriticSynapse * dendriticTree = inMatrix[weightRow];
       for (unsigned int weightCol = 0; weightCol < FanInCon.at(weightRow); ++weightCol) {
-         outFile << dendriticTree[weightCol].getWeight() << ' ';
+				outFile << setprecision(15) << dendriticTree[weightCol].getWeight() << ' ';
       }
       outFile << "\n";
    }
    if (maxAxonalDelay > defMaxAxonalDelay) {
-      outFile << "# Fan-in axonal delays\n";
+      if (AddComments.getValue()) {
+         outFile << "# Fan-in axonal delays\n";
+		}
       // This ostensibly scales as n^3c^2, which could be bad
       for (unsigned int axonalRow = 0; axonalRow < ni; ++axonalRow) {
          DendriticSynapse * dendriticTree = inMatrix[axonalRow];
@@ -4814,9 +4836,8 @@ void SaveWeights(ArgListType &arg) //AT_FUN
             exit(EXIT_FAILURE);
          }
          wijout <<
-            "function [FanInCon,cInMatrix,wInMatrix] = readwij(filename)\n"
-            "\n"
-            "% [FanInCon,cInMatrix,wInMatrix] = readwij(filename)\n"
+            "function [FanInCon, cInMatrix, wInMatrix, aInMatrix, numNeurons] = readwij(filename)\n"
+            "% [FanInCon, cInMatrix, wInMatrix, aInMatrix, numNeuronsi] = readwij(filename)\n"
             "%\n"
             "% gets the weight data in NeuroJet form\n"
             "%\n"
@@ -4824,13 +4845,16 @@ void SaveWeights(ArgListType &arg) //AT_FUN
             "% FanInCon(j) = # inputs to neuron j\n"
             "%\n"
             "% cInMatrix is a list of input indices\n"
-            "% cInMatrix(j,1:FanInCon(j)) = list of indices for input\n"
+            "% cInMatrix(j, 1:FanInCon(j)) = list of indices for input\n"
             "%  neurons into neuron j\n"
             "%  NOTE: Indices start at zero in NeuroJet so cInMatrix+1\n"
             "%  gives proper indices for Matlab.\n"
             "%\n"
             "% wInMatrix is a list of weights corresponding to cInMatrix\n"
-            "% wInMatrix(j,k) = weight of cInMatrix(j,k)\n"
+            "% wInMatrix(j, k) = weight of cInMatrix(j, k)\n"
+            "%\n"
+            "% aInMatrix is a list of axonal delays corresponding to cInMatrix\n"
+            "% aInMatrix(j, k) = amount of time for signal to travel to synapse j, k\n"
             "%\n"
             "\n"
             "tic\n"
@@ -4842,7 +4866,7 @@ void SaveWeights(ArgListType &arg) //AT_FUN
             "\treturn\n"
             "end\n"
             "\n"
-            "if ((nargout < 1) | (nargout > 3))\n"
+            "if ((nargout < 1) | (nargout > 5))\n"
             "\tdisp('readwij only outputs 1, 2, or 3 matrices');\n"
             "\treturn\n"
             "end\n"
@@ -4854,17 +4878,30 @@ void SaveWeights(ArgListType &arg) //AT_FUN
             "FanInCon(1:ni) = fscanf(fid,'%d',ni);\n"
             "\n"
             "if (nargout > 1)\n"
-            "disp('reading in connections...');\n"
-            "for i = 1:ni\n"
-            "\tcInMatrix(i,1:FanInCon(i)) = [fscanf(fid,'%d',FanInCon(i))]';\n"
-            "end\n"
+            "\tdisp('reading in connections...');\n"
+            "\tfor i = 1:ni\n"
+            "\t\tcInMatrix(i,1:FanInCon(i)) = [fscanf(fid,'%d',FanInCon(i))]';\n"
+            "\tend\n"
             "end\n"
             "\n"
             "if (nargout > 2)\n"
-            "disp('reading in weights...');\n"
-            "for i = 1:ni\n"
-            "\twInMatrix(i,1:FanInCon(i)) = [fscanf(fid,'%f',FanInCon(i))]';\n"
-            "end\n" "end\n" "\n" "fclose(fid);\n" "\n" "toc\n" "\n" "return\n" "\n";
+            "\tdisp('reading in weights...');\n"
+            "\tfor i = 1:ni\n"
+            "\t\twInMatrix(i,1:FanInCon(i)) = [fscanf(fid,'%f',FanInCon(i))]';\n"
+            "\tend\n"
+            "end\n"
+            "\n"
+            "if (nargout > 3)\n"
+            "\tdisp('reading in axonal delays...');\n"
+            "\tfor i = 1:ni\n"
+            "\t\taInMatrix(i,1:FanInCon(i)) = [fscanf(fid,'%d',FanInCon(i))]';\n"
+            "\tend\n"
+            "end\n"
+            "\n"
+            "if (nargout > 4)\n"
+            "\tnumNeurons = ni\n"
+            "end\n"
+            "\n" "fclose(fid);\n" "\n" "toc\n" "\n" "return\n" "\n";
          wijout.close();
       }
    }
@@ -5431,6 +5468,7 @@ void Test(ArgListType &arg) //AT_FUN
       ComL.HelpSet
          ("@Test( ... ) runs the network for 1 trial without updating the weights.\n"
           "Sets the TestingBuffer to the output sequence.\n"
+          "Sets the TestingExtBuffer to the input sequence.\n"
           "Sets TestingActivity to a matrix containing the activity of each timestep.\n"
           "Sets TestingThresholds to a matrix containing the threshold of each timestep.\n"
           "Sets TestingBusLines to a matrix containing buslines of each timestep.\n"
@@ -5646,7 +5684,16 @@ void Test(ArgListType &arg) //AT_FUN
       if (doCompPresent) {
          CompPresent(curPattern, false);
       } else {
-         Present(curPattern, IzhVValues, IzhUValues, davesRule, false);
+         DataMatrix curIzhVValues;
+         DataMatrix curIzhUValues;
+         Present(curPattern, curIzhVValues, curIzhUValues, davesRule, false);
+         //TODO: Extract the common code below into an addAll method a la Java
+         for (DataMatrixCIt it = curIzhVValues.begin(); it != curIzhVValues.end(); ++it) {
+				IzhVValues.push_back(*it);
+			}
+         for (DataMatrixCIt it = curIzhUValues.begin(); it != curIzhUValues.end(); ++it) {
+				IzhUValues.push_back(*it);
+			}
       }
 
       IFROOTNODE {
@@ -5775,6 +5822,7 @@ void Train(ArgListType &arg) //AT_FUN
    if (argunset) {
       ComL.HelpSet("@Train( ... ) runs the network.\n"
       "Sets the TrainingBuffer to the last output sequence.\n"
+      "Sets the TrainingExtBuffer to the input sequence.\n"
       "Sets TrainingActivity to a matrix containing the activity of each\n"
          "\ttimestep of the last training trial.\n"
       "Sets TrainingThresholds to a matrix containing the threshold of each\n"
@@ -6016,7 +6064,16 @@ void Train(ArgListType &arg) //AT_FUN
          if (doCompPresent) {
             CompPresent(*ptnIt, modifyExcWeights);
          } else {
-            Present(*ptnIt, IzhVValues, IzhUValues, true, modifyExcWeights);
+            DataMatrix curIzhVValues;
+            DataMatrix curIzhUValues;
+            Present(*ptnIt, curIzhVValues, curIzhUValues, true, modifyExcWeights);
+            //TODO: Extract the common code below into an addAll method a la Java
+            for (DataMatrixCIt it = curIzhVValues.begin(); it != curIzhVValues.end(); ++it) {
+			       IzhVValues.push_back(*it);
+            }
+            for (DataMatrixCIt it = curIzhUValues.begin(); it != curIzhUValues.end(); ++it) {
+		          IzhUValues.push_back(*it);
+    		   }
          }
 
          // Do single cell recording - AG

@@ -13,11 +13,13 @@ CACHE=build/CMakeCache.txt
 compile:
 	if [ ! -d $(BLD) ]; then mkdir $(BLD); fi
 	(cd $(BLD); cmake $(CMAKE_FLAGS) ..; make)
+	rm NeuroJet; ln -s $(BLD)/NeuroJet NeuroJet
 
 DBLD=debug.build
 debug:
 	if [ ! -d $(DBLD) ]; then mkdir $(DBLD); fi
 	(cd $(DBLD); cmake -DDEBUG=true -DCMAKE_VERBOSE_MAKEFILE=true $(CMAKE_FLAGS) ..; make)
+	rm NeuroJet_d; ln -s $(DBLD)/NeuroJet NeuroJet_d
 
 MBLD=mpi.build
 mpi:
