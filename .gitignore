@@ -1,16 +1,20 @@
 *~
 *.o
 *.m
+*.mat
 *.tgz
-build*
-debug.build
-Attic
-Test
 TP_small
 sweepTP
+
+# Generated directories
+build*
+debug.build
+
+# Generated executables
 testArrayAlg
 testValArray
 ArgFunctsTest
 GenericDataTest
 NeuroJet
 NeuroJet_d
+NumberDiff

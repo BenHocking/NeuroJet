@@ -1,0 +1,68 @@
+June 11, 2010
+
+Blake Thomas, Kai Chang, William B Levy
+MatLab TraceConditioning.m Settings
+
+SETTINGS FOR BOXCAR 1, deltaT = 20ms, 100ms CS, 100ms US, variable trace
+
+ni 		= 1000;   % num neurons
+Activity 	= 0.1;    % desired network activity level
+Con 		= 0.1;    % neuron interconnectivity
+mu 		= 0.0075; % synaptic modifcation rate constant
+K0 		= 0.7689; % shunting rest conductance
+epsilonK0       = 0.01;   % rate constant for delta-K0
+KFB 	        = 0.04768;% feedback inhibition scaling constant
+KFF 		= 0.02;   % feedforward inhibition scaling constant
+lambdaFB 	= 1;      % feedback interneuron synaptic modification rate
+lambdaFF 	= 0;      % feedforward interneuron synaptic modification rate
+
+%THESE NUMBERS CAN BE CHANGED AND WILL(should) NOT AFFECT ACTIVITY
+stutterCS 	= 5;           % repitition of input patterns, Length of CS in timesteps
+stutterUS 	= 5;           % repitition of input patterns, Length of US in timesteps
+trace           = 25;          % trace length in timesteps
+rise            = 0;	       % NMDArise
+alpha 		= exp(-20/100);% exp(-1/stutter); or exp(-deltaT / 100ms) for 100ms e-fold decay
+
+
+SETTINGS FOR BOXCAR 2, deltaT = 10ms, 100ms CS, 100ms, US, variable trace
+
+ni 		= 1000;    % num neurons
+Activity 	= 0.05;    % desired network activity level
+Con 		= 0.1;     % neuron interconnectivity
+mu 		= 0.0075;  % synaptic modifcation rate constant
+K0 		= 0.6985;  % shunting rest conductance
+epsilonK0       = 0.1;     % rate constant for delta-K0
+KFB 	        = 0.05397; % feedback inhibition scaling constant
+KFF 		= 0.02;    % feedforward inhibition scaling constant
+lambdaFB 	= 1;       % feedback interneuron synaptic modification rate
+lambdaFF 	= 0;       % feedforward interneuron synaptic modification rate
+
+%%% Time Settings
+stutterCS 	= 10;          % repitition of input patterns, Length of CS in timesteps
+stutterUS 	= 10;          % repitition of input patterns, Length of US in timesteps
+trace           = 50;          % trace length in timesteps
+rise            = 1;	       % NMDArise
+alpha 		= exp(-10/100);% exp(-1/stutter); or exp(-deltaT / 100ms) for 100ms e-fold decay
+
+
+SETTINGS FOR BOXCAR 4, deltaT = 5ms, 80ms CS, 80ms US, 350ms trace
+
+%These are still a bit "iffy". I did not build a longer Z0, which is probably required for boxcar 4. The Network should still work.
+
+ni 		= 1000;    % num neurons
+Activity 	= 0.025;    % desired network activity level
+Con 		= 0.1;     % neuron interconnectivity
+mu 		= 0.005;   % synaptic modifcation rate constant
+K0 		= 0.45;  % shunting rest conductance
+epsilonK0       = 2;    % rate constant for delta-K0
+KFB 	        = 0.058;   % feedback inhibition scaling constant
+KFF 		= 0.011;    % feedforward inhibition scaling constant
+lambdaFB 	= 1;       % feedback interneuron synaptic modification rate
+lambdaFF 	= 0;       % feedforward interneuron synaptic modification rate
+
+%%% Time Settings
+stutterCS 	= 16;      % repitition of input patterns, Length of CS in timesteps
+stutterUS 	= 16;      % repitition of input patterns, Length of US in timesteps
+trace           = 70;     % trace length in timesteps
+rise            = 2;	  % NMDArise %This could be 2 or 3, I'm not sure of the correct Biology.
+alpha 		= exp(-5/100);    % exp(-1/stutter); or exp(-deltaT / 100ms) for 100ms e-fold decay
