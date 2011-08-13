@@ -198,7 +198,11 @@ inline int Noise::RandInt(const int &low, const int &high)
    // less than RAND_MAX.  So if r > limit, we do NOT want to mod on
    // it -- rather, we generate another random number.
 
-   return ifloor(Uniform(low, high + 1 - EPSILON));
+   int retval = ifloor(Uniform(low, high + 1 - EPSILON));
+   // Fix on 8/13/2011
+   // While doing a large number of randomly generated networks, retval equaled high + 1
+   // See Test/NoiseTest.cpp for seed value that causes the problem
+   return (retval > high) ? high : retval;
 }
 
 inline double Noise::RandDbl() {

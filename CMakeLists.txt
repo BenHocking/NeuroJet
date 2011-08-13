@@ -74,6 +74,8 @@ enable_testing()
 # Unit tests
 add_executable(ArgFunctsTest ${TEST_DIR}/ArgFunctsTest.cpp ${NeuroJet_SOURCE_DIR}/Output.cpp)
 add_test(ArgFunctsTest ArgFunctsTest)
+add_executable(NoiseTest ${TEST_DIR}/NoiseTest.cpp ${NeuroJet_SOURCE_DIR}/Noise.cpp)
+add_test(NoiseTest NoiseTest)
 add_executable(StringTest ${TEST_DIR}/StringTest.cpp)
 add_test(StringTest StringTest)
 
