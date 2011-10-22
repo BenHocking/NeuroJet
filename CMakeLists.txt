@@ -53,6 +53,8 @@ endif()
 
 include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural)
 
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+
 file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 if(NOT (MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode"))
