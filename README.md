@@ -7,13 +7,13 @@ hippocampus.
 
 Authors
 -------
-Per Sederberg
-Matthew Harrison
-Scott Witherell
-Aaron Shon
-Paul Rodriguez
-Dave Sullivan
-Ben Hocking
-Andrew Howe
-Blake Thomas
-(et al.)
+* Per Sederberg
+* Matthew Harrison
+* Scott Witherell
+* Aaron Shon
+* Paul Rodriguez
+* Dave Sullivan
+* Ben Hocking
+* Andrew Howe
+* Blake Thomas
+* (et al.)
