@@ -14,6 +14,8 @@ Authors
 * Paul Rodriguez
 * Dave Sullivan
 * Ben Hocking
+* Aprotim Sanyal
+* Aleksandr Gershaft
 * Andrew Howe
 * Blake Thomas
 * (et al.)
