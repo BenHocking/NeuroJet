@@ -868,9 +868,9 @@ void CalcDendriticExcitation() {
          for (unsigned int i = 0; i < Fired[justNow].size(); ++i) {
             unsigned int firedNrn = Fired[justNow][i];
             if ((PCIt->getFirstNeuron()<=firedNrn) && (firedNrn<=PCIt->getLastNeuron())) {
-					dendriteQueue[i].assign(filterSize, 0.0);
-					dendriteQueue_inhdiv[i].assign(filterSize, 0.0);
-					dendriteQueue_inhsub[i].assign(filterSize, 0.0);
+					dendriteQueue[firedNrn].assign(filterSize, 0.0);
+					dendriteQueue_inhdiv[firedNrn].assign(filterSize, 0.0);
+					dendriteQueue_inhsub[firedNrn].assign(filterSize, 0.0);
             }
          }
       }
