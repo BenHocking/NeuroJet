@@ -28,6 +28,7 @@
 #include "ParallelRand.hpp"
 #endif
 
+#if defined(MULTIPROC)
 ParallelRand ParallelRand::RandComm;
 
 // Bernoulli Constructor
@@ -133,3 +134,5 @@ void ParallelRand::GenUniform(MPI_Request * request, MPI_Status * status)
       MPI_Test(request, &flag, status);
    }
 }
+#endif //MULTIPROC
+

@@ -2,6 +2,7 @@
 #   include "Parallel.hpp"
 #endif
 
+#if defined(MULTIPROC)
 unsigned int ParallelInfo::totalNumNrns;
 // Total number of nodes (including root)
 unsigned int ParallelInfo::P_NumNodes;
@@ -430,3 +431,4 @@ void ParallelInfo::sendZi(const Pattern &toSend)
                  << " seconds" << endl;
 #endif   
 }
+#endif // MULTIPROC

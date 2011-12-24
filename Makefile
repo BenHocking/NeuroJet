@@ -15,21 +15,21 @@ CACHE=build/CMakeCache.txt
 compile:
 	if [ ! -d $(BLD) ]; then mkdir $(BLD); fi
 	(cd $(BLD); cmake $(CMAKE_FLAGS) ..; make)
-	rm NeuroJet; ln -s $(BLD)/NeuroJet NeuroJet
+	rm -f NeuroJet; ln -s $(BLD)/NeuroJet NeuroJet
 
 DBLD=debug.build
 debug:
 	if [ ! -d $(DBLD) ]; then mkdir $(DBLD); fi
 	(cd $(DBLD); cmake -DDEBUG=true -DCMAKE_VERBOSE_MAKEFILE=true $(CMAKE_FLAGS) ..; make)
-	rm NeuroJet_d; ln -s $(DBLD)/NeuroJet NeuroJet_d
+	rm -f NeuroJet_d; ln -s $(DBLD)/NeuroJet NeuroJet_d
 
 MBLD=mpi.build
 mpi:
 	if [ ! -d $(MBLD) ]; then mkdir $(MBLD); fi
 	(cd $(MBLD); cmake -DMULTIPROC=true $(CMAKE_FLAGS) ..; make)
 
-test: compile
-	$(MAKE) -C $(BLD) test
+test: debug
+	$(MAKE) -C $(DBLD) test
 
 clean:
 	if [ -d $(MBLD) ]; then rm -rf $(MBLD); fi

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Informed Simplifications, LLC
+# Copyright (c) 2010-2011 Informed Simplifications, LLC
 # All rights reserved.
 #
 # @since Jan 27, 2010
@@ -8,6 +8,7 @@ cmake_minimum_required( VERSION 2.6 )
 project(NeuroJet CXX)
 if(DEBUG)
    set(CMAKE_BUILD_TYPE Debug)
+   add_definitions(--coverage)
    add_definitions(-DCHECK_BOUNDS)
 else()
    set(CMAKE_BUILD_TYPE Release)
@@ -28,7 +29,7 @@ if(APPLE)
 #    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
 #    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
 #    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_FULLY_DYNAMIC_STRING")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5")
+#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5")
     #Option -arch is only available with apple compilers
     include(CheckCXXCompilerFlag)
     check_cxx_compiler_flag("-arch i386" HAS_ARCH_FLAG)
@@ -54,6 +55,8 @@ endif()
 include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural)
 
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+#set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
 
 file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
