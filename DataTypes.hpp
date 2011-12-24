@@ -12,7 +12,9 @@
 #   include <string>
 #   include <cmath>
 #   include <algorithm>
-#   include <omp.h>
+#if defined(MULTIPROC)
+#     include <omp.h>
+#endif
 
 enum DataListType { DLT_unknown, DLT_sequence, DLT_matrix, DLT_analysis, DLT_file };
 const float verySmallFloat = 0.00000001f;

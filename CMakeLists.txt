@@ -4,7 +4,14 @@
 # @since Jan 27, 2010
 # @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
 
-cmake_minimum_required( VERSION 2.6 )
+if(APPLE)
+# TODO: Add test for whether clang++ exists. If not, revert to g++
+   if(EXISTS /usr/bin/clang++)
+     set(CMAKE_CXX_COMPILER "clang++")
+   endif()
+endif()
+
+cmake_minimum_required( VERSION 2.8 )
 project(NeuroJet CXX)
 if(DEBUG)
    set(CMAKE_BUILD_TYPE Debug)
@@ -15,10 +22,9 @@ else()
 endif()
 
 if(MULTIPROC)
-	add_definitions(-DMULTIPROC)
+   add_definitions(-DMULTIPROC)
 endif()
 
-# Argg! Xcode currently does not work with _GLIBCXX_DEBUG (it compiles, but will easily crash)
 if(APPLE)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "DEBUG")
 else()
@@ -26,25 +32,7 @@ else()
 endif()
 
 if(APPLE)
-#    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
-#    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -D_GLIBCXX_FULLY_DYNAMIC_STRING")
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.5")
-    #Option -arch is only available with apple compilers
-    include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("-arch i386" HAS_ARCH_FLAG)
-#    if(HAS_ARCH_FLAG) # For some 
-        if(${CMAKE_GENERATOR} STREQUAL "Xcode")
-            set(CMAKE_OSX_ARCHITECTURES "i386;")
-        else()
-            # Build for single architecture. Using this flag requires more than one
-            # architecture in the list, so this hack of only providing one forces
-            # a single architecture compile.
-            set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
-        endif()
-#    else()
-#	message("Using 64-bit mode on Mac")
-#    endif()
+   set(CMAKE_OSX_ARCHITECTURES "x86_64")
 endif()    
 
 if(NOT WIN32)
@@ -54,9 +42,9 @@ endif()
 
 include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural)
 
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-#set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
+if(DEBUG)
+   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
+endif()
 
 file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)

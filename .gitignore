@@ -9,6 +9,7 @@ sweepTP
 # Generated directories
 build*
 debug.build
+doc
 
 # Generated executables
 testArrayAlg
