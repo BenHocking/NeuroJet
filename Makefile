@@ -36,7 +36,7 @@ test: debug
 	$(MAKE) -C $(DBLD) test
 
 coverage: test
-	rm -f $(DOC)
+	rm -rf $(DOC)
 	lcov --directory $(DBLD) --zerocounters
 	(cd $(DBLD); ./ArgFunctsTest; ./NoiseTest; ./StringTest;)
 	lcov --directory $(DBLD) --capture --output-file $(DBLD)/app.info
