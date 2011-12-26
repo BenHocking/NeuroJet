@@ -1,7 +1,7 @@
 /***************************************************************************
- * neurojet_driver.c
+ * neurojet_driver.cpp
  *
- *  Copyright 2011 LevyLab
+ *  Copyright 2011 Ben Hocking
  *  This file is part of NeuroJet.
  *
  *  NeuroJet is free software: you can redistribute it and/or modify

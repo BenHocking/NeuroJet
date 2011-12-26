@@ -80,6 +80,10 @@
 #if !defined(ARGFUNCTS_HPP)
 #define ARGFUNCTS_HPP
 
+#if !defined(STRINGUTILS_HPP)
+#  include "utils/StringUtils.hpp"
+#endif
+
 #include <algorithm>
 #include <functional>
 #include <cmath>
@@ -94,6 +98,10 @@
 #include <vector>
 #include <numeric>
 #include <cctype>
+
+using neurojet::stringutils::to_string;
+using neurojet::stringutils::from_string;
+
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -296,151 +304,6 @@ inline int iround(const T data_in) { return static_cast<int>(data_in + 0.5); }
 
 template<typename T>
 inline int iceil(const T data_in) { return static_cast<int>(ceil(data_in)); }
-
-////////////////////////////////////////////////////////////////////////////////
-// Some string manipulation functions
-////////////////////////////////////////////////////////////////////////////////
-inline string ltrim(string const& source, char const* delims = " \t\r\n") {
-  string result(source);
-  string::size_type index = result.find_first_not_of(delims);
-  if (index != string::npos)
-    result.erase(0, index);
-  else
-    result.erase();
-  return result;
-}
-
-inline string rtrim(string const& source, char const* delims = " \t\r\n") {
-  string result(source);
-  string::size_type index = result.find_last_not_of(delims);
-  if (index != string::npos)
-    result.erase(++index);
-  else
-    result.erase();
-  return result;
-}
-
-inline string ucase(const string &s) {
-  string toReturn(EMPTYSTR);
-  transform(s.begin(), s.end(), back_inserter(toReturn), ptr_fun<int, int>(toupper));
-  return toReturn;
-}
-
-template<typename T>
-inline string to_string(const T& data_in) {
-   std::ostringstream os;
-   os << std::setprecision(20) << data_in;
-   return os.str();
-}
-
-template<>
-inline string to_string(const vector<string>& data_in) {
-   std::ostringstream os;
-   os << std::setprecision(20);
-   for (unsigned int i = 0; i < data_in.size(); i++) {
-     os << data_in.at(i);
-   }
-   return os.str();
-}
-
-template<>
-inline string to_string(const vector<double>& data_in) {
-   std::ostringstream os;
-   os << std::setprecision(20);
-   for (unsigned int i = 0; i < data_in.size(); i++) {
-     os << data_in.at(i);
-   }
-   return os.str();
-}
-
-template<>
-inline string to_string(const vector<int>& data_in) {
-   std::ostringstream os;
-   os << std::setprecision(20);
-   for (unsigned int i = 0; i < data_in.size(); i++) {
-     os << data_in.at(i);
-   }
-   return os.str();
-}
-
-template<typename T>
-inline T from_string(const string &data_in) {
-   if (data_in[0] == '.')
-      return from_string<T>("0" + data_in);
-   std::istringstream is(data_in);
-   T data_out;
-   is >> data_out;
-   return data_out;
-}
-
-template<> // abh2n: Hack to get code to compile. Don't actually use this!
-inline vector<string> from_string(const string &data_in) {
-  vector<string> data_out;
-  return data_out;
-}
-
-template<> // abh2n: Hack to get code to compile. Don't actually use this!
-inline vector<double> from_string(const string &data_in) {
-  vector<double> data_out;
-  return data_out;
-}
-
-template<> // abh2n: Hack to get code to compile. Don't actually use this!
-inline vector<int> from_string(const string &data_in) {
-  vector<int> data_out;
-  return data_out;
-}
-
-// Helper function for tokenize. Not used anywhere else
-inline void addToStrVec(vector<string>& container, const string& s, int begin, int end) {
-  // Only adds conditionally
-  if (end > begin) {
-    container.push_back(s.substr(begin, end - begin));
-  }
-}
-
-// tokenize separates the string s using token, except where token is inside of
-// elements specified by groups. For example, if groups is ""()[], then the
-// token will be ignored when it is inside quotes, parentheses, or square
-// brackets.
-inline vector<string> tokenize(const string &s, const char token,
-                               const string &groups) {
-   vector<string> toReturn(0, EMPTYSTR);
-   const unsigned int numGrps = groups.size() / 2;
-   vector<int> grpCnt = vector<int>(numGrps, 0);
-   const string combo = groups + token;
-   string::size_type prev = -1;
-   string::size_type start = 0;
-   string::size_type found = s.find_first_of(combo);
-   bool insideGroup = false;
-   while (found != string::npos) {
-     if (s[found] == token) {
-       if (!insideGroup) { // Do NOT combine with previous if statement
-	 addToStrVec(toReturn, s, start, found);
-	 start = found + 1;
-       }
-     }
-     else {
-       string::size_type grp = groups.find(s[found]);
-       int& numInGrp = grpCnt[grp / 2];
-       if (grp % 2 == 0) {
-	 numInGrp++;
-       }
-       else {
-	 numInGrp--;
-       }
-       insideGroup = (numInGrp > 0);
-       if (numInGrp < 0) {
-	 CALL_ERROR << "Mismatching " << groups[grp] << ERR_WHERE;
-	 exit(EXIT_FAILURE);
-       }
-     }
-     prev = found;
-     found = s.find_first_of(combo, prev + 1);
-   }
-   addToStrVec(toReturn, s, start, s.size());
-   return toReturn;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Some data deallocation functions

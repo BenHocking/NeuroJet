@@ -1,10 +1,9 @@
 #if !defined(SIMSTATE_HPP)
 #  define SIMSTATE_HPP
 /***************************************************************************
- *            SimState.hpp
+ * SimState.hpp
  *
- *  Tue Dec 20 10:23:52 2005
- *  Copyright 2005, 2011 LevyLab
+ *  Copyright 2011 Informed Simplifications, LLC
  *  This file is part of NeuroJet.
  *
  *  NeuroJet is free software: you can redistribute it and/or modify

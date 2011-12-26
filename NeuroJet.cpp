@@ -81,9 +81,17 @@ double total_time;
 //#if !defined(STATE_HPP)
 //#  include "State.hpp"
 //#endif
+#if !defined(STRINGUTILS_HPP)
+#  include "utils/StringUtils.hpp"
+#endif
 
 #include <stdexcept>
 #include <algorithm>
+
+using neurojet::stringutils::ltrim;
+using neurojet::stringutils::rtrim;
+using neurojet::stringutils::tokenize;
+using neurojet::stringutils::ucase;
 
 using namespace std;
 

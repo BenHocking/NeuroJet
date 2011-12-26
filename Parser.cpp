@@ -2,11 +2,6 @@
 #  include "Parser.hpp"
 #endif
 
-using std::string;
-
-#include <istream>
-using std::ifstream;
-
 #if !defined(OUTPUT_HPP)
 #  include "Output.hpp"
 #endif
@@ -16,6 +11,17 @@ using std::ifstream;
 #if !defined(SYMBOLS_HPP)
 #  include "Symbols.hpp"
 #endif
+#if !defined(STRINGUTILS_HPP)
+#  include "utils/StringUtils.hpp"
+#endif
+
+#include <istream>
+#include <string>
+
+using neurojet::stringutils::tokenize;
+
+using std::ifstream;
+using std::string;
 
 void Parser::ParseScript(const string &filename) {
    ScriptState newScript = ScriptState(filename);

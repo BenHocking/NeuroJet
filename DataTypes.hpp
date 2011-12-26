@@ -4,6 +4,8 @@
 // System includes and defines
 ///////////////////////////////////////////////////////////////////////////////
 
+#   include "utils/StringUtils.hpp"
+
 #   include <climits>
 #   include <list>
 #   include <vector>
@@ -16,13 +18,11 @@
 #     include <omp.h>
 #endif
 
+using neurojet::stringutils::EMPTYSTR;
+
 enum DataListType { DLT_unknown, DLT_sequence, DLT_matrix, DLT_analysis, DLT_file };
 const float verySmallFloat = 0.00000001f;
 const float almostOne = 0.99999999f;
-
-// Creates an empty string in a way that should be compiler independent.
-// See http://www.newartisans.com/2009/10/a-c-gotcha-on-snow-leopard.html
-const std::string EMPTYSTR = std::string(0, '\0');
 
 template<class T>
 inline void updateMax(T &max, const T chk) {

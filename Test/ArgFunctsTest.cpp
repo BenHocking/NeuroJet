@@ -1,8 +1,29 @@
+/***************************************************************************
+ * ArgFunctsTest.cpp
+ *
+ *  Copyright 2011 Ben Hocking
+ *  This file is part of the NeuroJet tester AllTests.
+ *
+ *  NeuroJet is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NeuroJet is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
+ ****************************************************************************/
 #include "ArgFuncts.hpp"
+
+#include "gtest/gtest.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
-#include "gtest/gtest.h"
 
 using std::vector;
 
@@ -34,17 +55,6 @@ namespace {
    private:
     AutoAssign aa;
   };
-
-  TEST(ArgFunctsTest, NestedTokensParseCorrectly) {
-    const string s = "This is a ((nested (test)) string)";
-    const char c = ' ';
-    const string g = "()";
-    const vector<string> tokens = tokenize(s, c, g);
-    EXPECT_STREQ("This", tokens[0].c_str());
-    EXPECT_STREQ("is", tokens[1].c_str());
-    EXPECT_STREQ("a", tokens[2].c_str());
-    EXPECT_STREQ("((nested (test)) string)", tokens[3].c_str());
-  }
 
   TEST(ArgFunctsTest, VectorSumAddsIntsCorrectly) {
     vector<int> vInt(3, 3);
@@ -154,23 +164,5 @@ namespace {
     EXPECT_EQ(0, subM[0].size());
     subM = SubMatrix(m44, 3, 2, 2, 3);
     EXPECT_EQ(0, subM.size());
-  }
-
-  TEST(ArgFunctsTest, LTrimTrimsLeft) {
-    EXPECT_STREQ("Test string 1 ", ltrim("\tTest string 1 ").c_str());
-    EXPECT_STREQ("Test string 2", ltrim("Test string 2").c_str());
-    EXPECT_EQ(0, ltrim("\t ").size());
-  }
-
-  TEST(ArgFunctsTest, RTrimTrimsRight) {
-    EXPECT_STREQ("\tTest string 1", rtrim("\tTest string 1 ").c_str());
-    EXPECT_STREQ("Test string 2", rtrim("Test string 2").c_str());
-    EXPECT_EQ(0, rtrim("\t ").size());
-  }
-
-  TEST(ArgFunctsTest, UCaseUpperCases) {
-    EXPECT_STREQ("\tTEST STRING 1 ", ucase("\tTest string 1 ").c_str());
-    EXPECT_STREQ("TEST STRING 2", ucase("Test string 2").c_str());
-    EXPECT_STREQ("\t ", ucase("\t ").c_str());
   }
 }

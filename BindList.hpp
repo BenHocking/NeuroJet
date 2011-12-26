@@ -1,7 +1,7 @@
 /***************************************************************************
  * BindList.hpp
  *
- *  Copyright 2011 LevyLab
+ *  Copyright 2011 Informed Simplifications, LLC
  *  This file is part of NeuroJet.
  *
  *  NeuroJet is free software: you can redistribute it and/or modify
