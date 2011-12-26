@@ -43,23 +43,35 @@ if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural ${GTEST_INCLUDE_DIRS})
+include_directories(${NeuroJet_SOURCE_DIR} ${GTEST_INCLUDE_DIRS})
 
 if(DEBUG)
    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
 endif()
 
-file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
-list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/neurojet_driver.cpp)
-if(NOT (MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode"))
-  list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/Parallel.cpp)
-  list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/ParallelRand.cpp)
+set(SRC_DIR ${NeuroJet_SOURCE_DIR})
+set(NEURAL_DIR ${SRC_DIR}/neural)
+set(SRC ${SRC_DIR}/ArgFuncts.cpp ${SRC_DIR}/Calc.cpp ${SRC_DIR}/NeuroJet.cpp
+	${SRC_DIR}/Noise.cpp ${SRC_DIR}/Output.cpp ${SRC_DIR}/Parser.cpp ${SRC_DIR}/Population.cpp
+	${SRC_DIR}/Program.cpp ${SRC_DIR}/SystemVar.cpp ${SRC_DIR}/rdtsc.s
+	${NEURAL_DIR}/Interneuron.cpp ${NEURAL_DIR}/NeuronType.cpp
+	${NEURAL_DIR}/Synapse.cpp ${NEURAL_DIR}/SynapseType.cpp)
+if(MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
+  set(SRC ${SRC} ${SRC_DIR}/Parallel.cpp ${SRC_DIR}/ParallelRand.cpp)
 endif()
 
 # Add header files so they show up in visual studio (really should be a 
 # generator conditional test).
 if(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
-  file(GLOB_RECURSE INCLUDES *.hpp)
+  set(INCLUDES ${SRC_DIR}/ActiveConnect.hpp ${SRC_DIR}/ArgFuncts.hpp ${SRC_DIR}/BindList.hpp
+  	       ${SRC_DIR}/Calc.hpp ${SRC_DIR}/DataTypes.hpp ${SRC_DIR}/Filter.hpp
+ 	       ${SRC_DIR}/Matlab.hpp ${SRC_DIR}/MatrixMeanHelper.hpp ${SRC_DIR}/MatrixMomentHelper.hpp
+  	       ${SRC_DIR}/MatrixSSHelper.hpp ${SRC_DIR}/MatrixSumHelper.hpp ${SRC_DIR}/NeuroJet.hpp
+  	       ${SRC_DIR}/Noise.hpp ${SRC_DIR}/Output.hpp ${SRC_DIR}/Parallel.hpp ${SRC_DIR}/ParallelRand.hpp
+  	       ${SRC_DIR}/Parser.hpp ${SRC_DIR}/Population.hpp ${SRC_DIR}/Program.hpp ${SRC_DIR}/SimState.hpp
+  	       ${SRC_DIR}/State.hpp ${SRC_DIR}/Symbols.hpp ${SRC_DIR}/SystemVar.hpp ${SRC_DIR}/User.hpp
+  	       ${SRC_DIR}/WeightAnalysis.hpp ${NEURAL_DIR}/Interneuron.hpp ${NEURAL_DIR}/NeuronType.hpp
+  	       ${NEURAL_DIR}/Synapse.hpp ${NEURAL_DIR}/SynapseType.hpp)
 endif()
 
 set(FILES ${SRC} ${INCLUDES})

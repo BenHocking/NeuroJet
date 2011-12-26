@@ -7,7 +7,7 @@
 #    include "Population.hpp"
 #  endif
 #  if !defined(SYNAPSE_HPP)
-#    include "Synapse.hpp"
+#    include "neural/Synapse.hpp"
 #  endif
 
 class State {

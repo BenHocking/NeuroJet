@@ -28,7 +28,7 @@
 #    include "Noise.hpp"
 #  endif
 #  if !defined(INTERNEURON_HPP)
-#    include "Interneuron.hpp"
+#    include "neural/Interneuron.hpp"
 #  endif
 
 class SimState{

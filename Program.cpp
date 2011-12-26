@@ -4,9 +4,6 @@
 #  if !defined(PROGRAM_HPP)
 #    include "Program.hpp"
 #  endif
-#  if !defined(NEURONTYPE_HPP)
-#    include "NeuronType.hpp"
-#  endif
 #  if !defined(PARALLEL_HPP)
 #    include "Parallel.hpp"
 #  endif
@@ -16,8 +13,11 @@
 #  if !defined(SYMBOLS_HPP)
 #    include "Symbols.hpp"
 #  endif
+#  if !defined(NEURONTYPE_HPP)
+#    include "neural/NeuronType.hpp"
+#  endif
 #  if !defined(SYNAPSE_HPP)
-#    include "Synapse.hpp"
+#    include "neural/Synapse.hpp"
 #  endif
 #  include <iostream>
 #  include <fstream>

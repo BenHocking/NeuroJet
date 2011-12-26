@@ -47,7 +47,7 @@ using std::vector;
 #      include "ParallelRand.hpp"
 #    endif
 #    if !defined(SYNAPSE_HPP)
-#      include "Synapse.hpp"
+#      include "neural/Synapse.hpp"
 #    endif
 
 // This message prefaces everything written when running in

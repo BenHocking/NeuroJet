@@ -6,10 +6,6 @@
 #  include "SystemVar.hpp"
 #endif
 
-#if !defined(INTERNEURON_HPP)
-#  include "Interneuron.hpp"
-#endif
-
 #include <vector>
 #include <algorithm>
 #include <functional>

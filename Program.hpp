@@ -15,10 +15,10 @@
 #    include "Filter.hpp"
 #  endif
 #  if !defined(INTERNEURON_HPP)
-#    include "Interneuron.hpp"
+#    include "neural/Interneuron.hpp"
 #  endif
 #  if !defined(NEURONTYPE_HPP)
-#    include "NeuronType.hpp"
+#    include "neural/NeuronType.hpp"
 #  endif
 #  if !defined(PARALLELRAND_HPP)
 #    include "ParallelRand.hpp"
@@ -27,7 +27,7 @@
 #    include "Population.hpp"
 #  endif
 #  if !defined(SYNAPSETYPE_HPP)
-#    include "SynapseType.hpp"
+#    include "neural/SynapseType.hpp"
 #  endif
 #  if !defined(SYSTEMVAR_HPP)
 #    include "SystemVar.hpp"

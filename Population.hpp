@@ -5,10 +5,10 @@
 #    include "DataTypes.hpp"
 #  endif
 #  if !defined(INTERNEURON_HPP)
-#    include "Interneuron.hpp"
+#    include "neural/Interneuron.hpp"
 #  endif
 #  if !defined(NEURONTYPE_HPP)
-#    include "NeuronType.hpp"
+#    include "neural/NeuronType.hpp"
 #  endif
 #  include <vector>
 #  include <string>
