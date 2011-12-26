@@ -590,31 +590,31 @@ void printListHelp(ostream &os, const string &Flag, const string &Help,
 template <typename T>
 class TArg {
 public:
-  TArg(const string& flag, const string& help, const T defaultVal): _value(defaultVal), _flag(flag), _help(help),
-								    _defaultVal(defaultVal), _isDefault(true) { }
-  TArg(const string& flag, const string& help): _value(0), _flag(flag), _help(help), _defaultVal(0), _isDefault(false) { }
+  TArg(const string& flag, const string& help, const T defaultVal): value_(defaultVal), flag_(flag), help_(help),
+								    default_val_(defaultVal), is_default_(true) { }
+  TArg(const string& flag, const string& help): value_(0), flag_(flag), help_(help), default_val_(0), is_default_(false) { }
   virtual ~TArg() { }
-  const string& getFlag() const { return _flag; }
-  const T& getValue() const { return _value; }
+  const string& getFlag() const { return flag_; }
+  const T& getValue() const { return value_; }
   virtual ostream& printHelp(ostream& os) const {
    int w = 10;
    const string s = " : ";
-   os << std::setw(w) << _flag;
+   os << std::setw(w) << flag_;
    os << s;
-   os << std::setw(w) << (_isDefault ? to_string<T>(_defaultVal) : "{required}");
-   os << s << _help << std::endl;
-   return os << std::setw(w) << _flag << s << std::setw(w)
-	     << (_isDefault ? to_string<T>(_defaultVal) : "{required}")
-	     << s << _help << "\n";
+   os << std::setw(w) << (is_default_ ? to_string<T>(default_val_) : "{required}");
+   os << s << help_ << std::endl;
+   return os << std::setw(w) << flag_ << s << std::setw(w)
+	     << (is_default_ ? to_string<T>(default_val_) : "{required}")
+	     << s << help_ << "\n";
   }
   virtual bool setValue(const T& newValue) {
-    _value = newValue;
+    value_ = newValue;
     return true;
   }
-  void swapValue(TArg& otherArg) { std::swap(_value, otherArg._value); }
+  void swapValue(TArg& otherArg) { std::swap(value_, otherArg.value_); }
   virtual bool setValue(ArgListType &argv) {
    // Find an argument that matches the flag, but that hasn't already been found
-   ArgListTypeIt thing1 = find(argv.begin(), argv.end(), ArgType(_flag, false));
+   ArgListTypeIt thing1 = find(argv.begin(), argv.end(), ArgType(flag_, false));
    if (thing1 != argv.end()) {
       // Check out its corresponding value
       ArgListTypeIt thing2 = thing1 + 1;
@@ -623,25 +623,25 @@ public:
          // Mark it and its value as being accounted for
          thing1->second = true;
          thing2->second = true;
-         _value = from_string<T>(thing2->first);
+         value_ = from_string<T>(thing2->first);
          return true;
       }
    }
-   if (!_isDefault) return false;
-   _value = _defaultVal;
+   if (!is_default_) return false;
+   value_ = default_val_;
    return true;
   }
 protected:
-  T _value;
-  string _flag;
-  string _help;
-  T _defaultVal;
-  bool _isDefault;
+  T value_;
+  string flag_;
+  string help_;
+  T default_val_;
+  bool is_default_;
 };
 
 // Template specialization for strings
 template <>
-inline TArg<string>::TArg(const string& flag, const string& help): _value(EMPTYSTR), _flag(flag), _help(help), _defaultVal(EMPTYSTR), _isDefault(false) { }
+inline TArg<string>::TArg(const string& flag, const string& help): value_(EMPTYSTR), flag_(flag), help_(help), default_val_(EMPTYSTR), is_default_(false) { }
 
 template <typename T>
 ostream& operator<<(ostream &os, const TArg<T> &x) {
@@ -650,23 +650,23 @@ ostream& operator<<(ostream &os, const TArg<T> &x) {
 
 class IntArgList: public TArg<vector<int> > {
 public:
-  IntArgList(const string& flag, const string& help): TArg<vector<int> >(flag, help), _errMsg(EMPTYSTR) { }
-  inline const string& getErr() const { return _errMsg; }
-  inline int getValue(const int i) const { return _value.at(i); }
+  IntArgList(const string& flag, const string& help): TArg<vector<int> >(flag, help), err_msg_(EMPTYSTR) { }
+  inline const string& getErr() const { return err_msg_; }
+  inline int getValue(const int i) const { return value_.at(i); }
   ostream& printHelp(ostream &os) const {
-    printListHelp(os, _flag, _help, _isDefault, _defaultVal);
+    printListHelp(os, flag_, help_, is_default_, default_val_);
     return os;
   }
   bool setValue(ArgListType &argv) {
-    _errMsg = setListValue(argv, _flag, _value, _isDefault, _defaultVal);
-    return _errMsg.size() == 0;
+    err_msg_ = setListValue(argv, flag_, value_, is_default_, default_val_);
+    return err_msg_.size() == 0;
   }
-  inline unsigned int size() const { return _value.size(); }
-  inline int& operator[] (int index) { return _value.at(index);}
-  inline const int& operator[] (int index) const { return _value.at(index);}
+  inline unsigned int size() const { return value_.size(); }
+  inline int& operator[] (int index) { return value_.at(index);}
+  inline const int& operator[] (int index) const { return value_.at(index);}
 
 private:
-   string _errMsg;
+   string err_msg_;
 };
 
 inline ostream& operator << (ostream &os, const IntArgList &x) {
@@ -679,23 +679,23 @@ inline ostream& operator << (ostream &os, const IntArgList &x) {
 
 class DblArgList: public TArg<vector<double> > {
  public:
-  DblArgList(const string& flag, const string& help): TArg<vector<double> >(flag, help), _errMsg(EMPTYSTR) { }
-  inline const string& getErr() const { return _errMsg; };
-  inline double getValue(const int i) const { return _value.at(i); };
+  DblArgList(const string& flag, const string& help): TArg<vector<double> >(flag, help), err_msg_(EMPTYSTR) { }
+  inline const string& getErr() const { return err_msg_; };
+  inline double getValue(const int i) const { return value_.at(i); };
   ostream& printHelp(ostream &os) const {
-     printListHelp(os, _flag, _help, _isDefault, _defaultVal);
+     printListHelp(os, flag_, help_, is_default_, default_val_);
      return os;
   };
   bool setValue(ArgListType &argv) {
-     _errMsg = setListValue(argv, _flag, _value, _isDefault, _defaultVal);
-     return _errMsg.size() == 0;
+     err_msg_ = setListValue(argv, flag_, value_, is_default_, default_val_);
+     return err_msg_.size() == 0;
   };
-  inline unsigned int size() const { return _value.size(); };
-  inline double &operator[] (int index) { return _value[index]; };
-  inline const double &operator[] (int index) const { return _value[index]; };
+  inline unsigned int size() const { return value_.size(); };
+  inline double &operator[] (int index) { return value_[index]; };
+  inline const double &operator[] (int index) const { return value_[index]; };
 
  protected:
-   string _errMsg;
+   string err_msg_;
 };
 
 inline ostream& operator << (ostream &os, const DblArgList &x) {
@@ -709,24 +709,24 @@ inline ostream& operator << (ostream &os, const DblArgList &x) {
 class StrArgList: public TArg<vector<string> > {
  public:
    StrArgList(const string& flag, const string& help, const bool isOptional = false):
-     TArg<vector<string> >(flag, help), _isOptional(isOptional), _errMsg(EMPTYSTR) { }
-   inline const string& getErr() const { return _errMsg; }
-   inline const string& getValue(const int i) const { return _value.at(i); }
+     TArg<vector<string> >(flag, help), is_optional_(isOptional), err_msg_(EMPTYSTR) { }
+   inline const string& getErr() const { return err_msg_; }
+   inline const string& getValue(const int i) const { return value_.at(i); }
    ostream& printHelp(ostream &os) const {
-      printListHelp(os, _flag, _help, _isOptional, _defaultVal);
+      printListHelp(os, flag_, help_, is_optional_, default_val_);
       return os;
    }
    bool setValue(ArgListType &argv) {
-      _errMsg = setListValue(argv, _flag, _value, _isOptional, _defaultVal);
-      return _errMsg.size() == 0;
+      err_msg_ = setListValue(argv, flag_, value_, is_optional_, default_val_);
+      return err_msg_.size() == 0;
    }
-   inline unsigned int size() const {return _value.size();}
-   inline string& operator[] (int index) { return _value.at(index); };
-   inline const string& operator[] (int index) const { return _value.at(index); };
+   inline unsigned int size() const {return value_.size();}
+   inline string& operator[] (int index) { return value_.at(index); };
+   inline const string& operator[] (int index) const { return value_.at(index); };
 
  private:
-   bool _isOptional;
-   string _errMsg;
+   bool is_optional_;
+   string err_msg_;
 };
 
 inline ostream& operator << (ostream &os, const StrArgList &x) {
@@ -740,16 +740,16 @@ inline ostream& operator << (ostream &os, const StrArgList &x) {
 class FlagArg: public TArg<bool> {
  public:
    FlagArg(const string& onFlag, const string& offFlag, const string& help, bool defaultVal):
-     TArg<bool>(onFlag, help, defaultVal), _onFlag(onFlag), _offFlag(offFlag) { }
+     TArg<bool>(onFlag, help, defaultVal), on_flag_(onFlag), off_flag_(offFlag) { }
    FlagArg(const string& onFlag, const string& offFlag, const string& help):
-     TArg<bool>(onFlag, help), _onFlag(onFlag), _offFlag(offFlag) { }
+     TArg<bool>(onFlag, help), on_flag_(onFlag), off_flag_(offFlag) { }
    ostream& printHelp(ostream &os) const;
-   inline bool setValue(bool newValue) { _value = newValue; return true; };
+   bool setValue(bool newValue) { value_ = newValue; return true; }
    bool setValue(ArgListType &argv);
 
  protected:
-   string _onFlag;
-   string _offFlag;
+   string on_flag_;
+   string off_flag_;
 };
 
 class CommandLine {

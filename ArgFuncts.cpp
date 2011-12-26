@@ -26,32 +26,32 @@ inline void memcheck(const void * test, const string str)
 ostream& FlagArg::printHelp(ostream &os) const {
    int w = 10;
    string s = " : ";
-   os << setw(w) << _onFlag << s << setw(w);
-   if (_isDefault) os << (_defaultVal ? _onFlag : _offFlag);
+   os << setw(w) << on_flag_ << s << setw(w);
+   if (is_default_) os << (default_val_ ? on_flag_ : off_flag_);
       else os << "{required}";      
-   os << s << "{" << _onFlag << "|" << _offFlag << "} " << _help << "\n";
+   os << s << "{" << on_flag_ << "|" << off_flag_ << "} " << help_ << "\n";
    return os;
 }
 
 bool FlagArg::setValue(ArgListType &argv) {  
-   ArgListTypeIt onIt = find(argv.begin(), argv.end(), ArgType(_onFlag, false));
-   ArgListTypeIt offIt = find(argv.begin(), argv.end(), ArgType(_offFlag, false));   
+   ArgListTypeIt onIt = find(argv.begin(), argv.end(), ArgType(on_flag_, false));
+   ArgListTypeIt offIt = find(argv.begin(), argv.end(), ArgType(off_flag_, false));   
    bool foundOn = (onIt != argv.end());
    bool foundOff = (offIt != argv.end());
    // If both or neither are found, and there is no default behavior, bail
-   if ((foundOn == foundOff) && !_isDefault) return false;
+   if ((foundOn == foundOff) && !is_default_) return false;
    if (foundOff) {
       // Mark it as accounted for
       offIt->second = true;
-      _value = false;
+      value_ = false;
    }
    if (foundOn) {
       // Mark it as accounted for
       onIt->second = true;
-      _value = true; // On flag trumps off flag
+      value_ = true; // On flag trumps off flag
    }
    else if (!foundOff) {
-      _value = _defaultVal; // If neither are found, use default
+      value_ = default_val_; // If neither are found, use default
    }
    return true;
 }

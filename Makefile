@@ -38,7 +38,7 @@ test: debug
 coverage: test
 	rm -rf $(DOC)
 	lcov --directory $(DBLD) --zerocounters
-	(cd $(DBLD); ./ArgFunctsTest; ./NoiseTest; ./StringTest;)
+	(cd $(DBLD); ./AllTests;)
 	lcov --directory $(DBLD) --capture --output-file $(DBLD)/app.info
 	mkdir $(DOC)
 	(cd $(DOC); genhtml ../debug.build/app.info; open index.html)

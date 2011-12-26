@@ -5,14 +5,17 @@
 # @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
 
 if(APPLE)
-# TODO: Add test for whether clang++ exists. If not, revert to g++
    if(EXISTS /usr/bin/clang++)
      set(CMAKE_CXX_COMPILER "clang++")
+     set(CMAKE_C_COMPILER "clang")
    endif()
 endif()
 
 cmake_minimum_required( VERSION 2.8 )
 project(NeuroJet CXX)
+
+find_package(GTest REQUIRED)
+
 if(DEBUG)
    set(CMAKE_BUILD_TYPE Debug)
    add_definitions(--coverage)
@@ -40,14 +43,14 @@ if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural)
+include_directories(${NeuroJet_SOURCE_DIR} ${NeuroJet_SOURCE_DIR}/neural ${GTEST_INCLUDE_DIRS})
 
 if(DEBUG)
    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
 endif()
 
-file(GLOB ALL_SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
 file(GLOB SRC ${NeuroJet_SOURCE_DIR}/*.cpp ${NeuroJet_SOURCE_DIR}/neural/*.cpp ${NeuroJet_SOURCE_DIR}/*.s)
+list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/neurojet_driver.cpp)
 if(NOT (MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode"))
   list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/Parallel.cpp)
   list(REMOVE_ITEM SRC ${NeuroJet_SOURCE_DIR}/ParallelRand.cpp)
@@ -65,12 +68,13 @@ set(TEST_DIR ${NeuroJet_SOURCE_DIR}/Test)
 enable_testing()
 
 # Unit tests
-add_executable(ArgFunctsTest ${TEST_DIR}/ArgFunctsTest.cpp ${NeuroJet_SOURCE_DIR}/Output.cpp)
-add_test(ArgFunctsTest ArgFunctsTest)
-add_executable(NoiseTest ${TEST_DIR}/NoiseTest.cpp ${NeuroJet_SOURCE_DIR}/Noise.cpp)
-add_test(NoiseTest NoiseTest)
-add_executable(StringTest ${TEST_DIR}/StringTest.cpp)
-add_test(StringTest StringTest)
+# * Requires FindGTest.cmake
+# * Requires setting your GTEST_ROOT environment variable unless you're using another mechanism
+
+add_executable(AllTests ${TEST_DIR}/TestHarness.cpp ${FILES} ${TEST_DIR}/NoiseTest.cpp ${TEST_DIR}/StringTest.cpp
+			${TEST_DIR}/ArgFunctsTest.cpp)
+target_link_libraries(AllTests ${GTEST_BOTH_LIBRARIES})
+add_test(AllTests AllTests)
 
 # Main executable
-add_executable(NeuroJet ${FILES})
+add_executable(NeuroJet ${FILES} ${NeuroJet_SOURCE_DIR}/neurojet_driver.cpp)

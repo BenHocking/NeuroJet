@@ -1,7 +1,10 @@
 #include <string>
+#include "gtest/gtest.h"
 
-int main() {
-  //  const std::string EMPTYSTR(0, '\0');
-  // const std::string EMPTYSTR = "";
-  const std::string EMPTYSTR(0, 'a');
+namespace {
+  TEST(StringTest, EmptyStringIsEmpty) {
+    const std::string EMPTYSTR(0, 'a');
+    const std::string ANOTHEREMPTYSTR;
+    EXPECT_STREQ(EMPTYSTR.c_str(), ANOTHEREMPTYSTR.c_str());
+  }
 }

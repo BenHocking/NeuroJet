@@ -127,7 +127,7 @@ const string NeuroJetLastUpdateAuth = "Last changed by bhocking";
 //#if defined(WIN32)
 //int _tmain(int argc, char * argv[])
 //#else
-int main(int argc, char * argv[])
+int neurojet_main(int argc, char * argv[])
 //#endif
 {
    Output::setStreams(cout, cerr);
