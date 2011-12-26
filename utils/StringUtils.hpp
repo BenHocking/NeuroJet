@@ -22,7 +22,6 @@
 #define STRINGUTILS_HPP
 #include <functional>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -34,17 +33,19 @@ namespace neurojet {
     // See http://www.newartisans.com/2009/10/a-c-gotcha-on-snow-leopard.html
     const std::string EMPTYSTR = std::string(0, '\0');
 
-    std::string ltrim(std::string const& source, char const* delims = " \t\r\n");
+    std::string ltrim(std::string const& source, char const* delims=" \t\r\n");
 
-    std::string rtrim(std::string const& source, char const* delims = " \t\r\n");
+    std::string rtrim(std::string const& source, char const* delims=" \t\r\n");
 
     std::string ucase(const std::string &s);
 
     // Helper function for tokenize. Not used anywhere else
-    void addToStrVec(std::vector<std::string>& container, const std::string& s, int begin, int end);
+    void addToStrVec(std::vector<std::string>& container, const std::string& s,
+                     int begin, int end);
 
     std::vector<std::string> tokenize(const std::string &s, const char token,
-                                      const std::string &groups) throw(std::logic_error);
+                                      const std::string &groups)
+                             throw(std::logic_error);
 
     template<typename T>
     inline std::string to_string(const T& data_in) {

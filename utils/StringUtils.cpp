@@ -22,6 +22,11 @@
 #  include "StringUtils.hpp"
 #endif
 
+#include <algorithm>
+#include <functional>
+#include <string>
+#include <vector>
+
 namespace neurojet {
   namespace stringutils {
     std::string ltrim(std::string const& source, char const* delims) {
@@ -46,24 +51,29 @@ namespace neurojet {
 
     std::string ucase(const std::string &s) {
       std::string toReturn(EMPTYSTR);
-      transform(s.begin(), s.end(), back_inserter(toReturn), std::ptr_fun<int, int>(toupper));
+      transform(s.begin(), s.end(), back_inserter(toReturn),
+                std::ptr_fun<int, int>(toupper));
       return toReturn;
     }
 
     // Helper function for tokenize. Not used anywhere else
-    void addToStrVec(std::vector<std::string>& container, const std::string& s, int begin, int end) {
+    void addToStrVec(std::vector<std::string>& container, const std::string& s,
+                     int begin, int end) {
       // Only adds conditionally
       if (end > begin) {
         container.push_back(s.substr(begin, end - begin));
       }
     }
 
-    // tokenize separates the string s using token, except where token is inside of
-    // elements specified by groups. For example, if groups is ""()[], then the
-    // token will be ignored when it is inside quotes, parentheses, or square
-    // brackets.
+    /**
+     * tokenize separates the string s using token, except where token is inside
+     * of elements specified by groups. For example, if groups is ""()[], then
+     * the token will be ignored when it is inside quotes, parentheses, or
+     * square brackets.
+     */
     std::vector<std::string> tokenize(const std::string &s, const char token,
-                                      const std::string &groups) throw(std::logic_error) {
+                                      const std::string &groups)
+                             throw(std::logic_error) {
       std::vector<std::string> toReturn(0, EMPTYSTR);
       const unsigned int numGrps = groups.size() / 2;
       std::vector<int> grpCnt = std::vector<int>(numGrps, 0);
@@ -74,18 +84,16 @@ namespace neurojet {
       bool insideGroup = false;
       while (found != std::string::npos) {
         if (s[found] == token) {
-          if (!insideGroup) { // Do NOT combine with previous if statement
+          if (!insideGroup) {  // Do NOT combine with previous if statement
             addToStrVec(toReturn, s, start, found);
             start = found + 1;
           }
-        }
-        else {
+        } else {
           std::string::size_type grp = groups.find(s[found]);
           int& numInGrp = grpCnt[grp / 2];
           if (grp % 2 == 0) {
             numInGrp++;
-          }
-          else {
+          } else {
             numInGrp--;
           }
           insideGroup = (numInGrp > 0);
