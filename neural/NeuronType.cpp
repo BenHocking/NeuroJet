@@ -72,7 +72,7 @@ void NeuronType::convolveFilters() {
   Filter* synapticFilter = m_synapseType.getFilter();
   if (deltaT > verySmallFloat) {
     if ((m_dendriteToSomaFilter.size() > 1) && (synapticFilter->size() > 1)) {
-      DataList& convolved =
+      const DataList& convolved =
         Calc::convolve(m_dendriteToSomaFilter.getFilter(),
                        synapticFilter->getFilter(), deltaT);
       m_convolvedFilter.setFilter(convolved);
