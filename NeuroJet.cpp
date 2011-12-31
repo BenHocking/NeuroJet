@@ -49,7 +49,11 @@
 #  define PEER_TO_PEER
 #endif
 
-#include <string.h>
+#include <algorithm>
+#include <cassert>
+//#include <cstring>
+#include <stdexcept>
+#include <string>
 
 #if defined(TIMING_P2P)
 long trials;
@@ -85,13 +89,12 @@ double total_time;
 #  include "utils/StringUtils.hpp"
 #endif
 
-#include <stdexcept>
-#include <algorithm>
-
 using neurojet::stringutils::ltrim;
 using neurojet::stringutils::rtrim;
 using neurojet::stringutils::tokenize;
 using neurojet::stringutils::ucase;
+
+using std::string;
 
 using namespace std;
 
@@ -125,7 +128,6 @@ const string NeuroJetLastUpdateAuth = "Last changed by bhocking";
 #    define CHECK_BOUNDS true
 #  endif
 #endif
-#include <cassert>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Definitions
@@ -539,7 +541,7 @@ bool isNJNetworkFileType(const string& filename) {
    while ((!foundLine) && std::getline(chkFile, lineBuf)) {
       lineBuf = ltrim(lineBuf); // Remove leading whitespace
       const string commentChars = "#%/";
-      if (lineBuf.size() > 0 && commentChars.find(lineBuf[0]) == std::string::npos) {
+      if (lineBuf.size() > 0 && commentChars.find(lineBuf[0]) == string::npos) {
          foundLine = true;
       }
    }
@@ -742,7 +744,7 @@ void AllocateMemory() {
    return;
 }
 
-vector<float> assignIzhParams(const string &IzhNeuronType) {
+vector<float> assignIzhParams(const string& IzhNeuronType) {
    // defaults
    float a = 0.02f;
    float b = 0.2f;
@@ -1198,7 +1200,7 @@ void CalcSynapticActivation(const UIVectorDeque &FiredArray, const xInput &curPa
 }
 
 bool chkDataExists(const TArg<string> &DataName, const DataListType newDataType,
-                   const string FunctionName, const CommandLine &ComL) {
+                   const string& FunctionName, const CommandLine& ComL) {
    string dataType = SystemVar::GetVarTypeName(DataName.getValue());
    if (dataType == "unknown") return false;
    if (((dataType == "sequence") && (newDataType == DLT_sequence))
@@ -1216,8 +1218,7 @@ bool chkDataExists(const TArg<string> &DataName, const DataListType newDataType,
    exit(EXIT_FAILURE);
 }
 
-void CheckIzhikevich()
-{
+void CheckIzhikevich() {
    int IzhExplicitCount = program::Main().GetIzhExplicitCount();
    int IzhMaxExplicitCount = program::Main().GetIzhExplicitMaxCount();
 
@@ -1565,9 +1566,8 @@ vector<xInput> GenerateInputSequence(UIPtnSequence &Seq, const float inputNoise,
    return seqToReturn;
 }
 
-void GetConnectivity(string filename)
 // i.e., ReadWeights
-{
+void GetConnectivity(const string& filename) {
    /////////////////////////////////////////////////
    // Read in connections and weights from file,
    //   allocating memory for both
@@ -2082,17 +2082,15 @@ void UpdateBuffers(UIPtnSequence &FiringPtns, UIPtnSequence &ExtPtns,
    if (RecordIdxList[9]) ThreshVect[ndx] = Threshold;
 }
 
-inline void UpdateMaxBucketStats()
-{
+inline void UpdateMaxBucketStats() {
 #if defined(RNG_BUCK_USG)
    if (rng_buck_usage + rng_buck_empty > max_rng_usg)
       max_rng_usg = rng_buck_usage + rng_buck_empty;
 #endif
 }
 
-void UpdateParams(const string &varName, const string &varValue,
-                  const string &FunctionName)
-{
+void UpdateParams(const string& varName, const string& varValue,
+                  const string& FunctionName) {
    if (SystemVar::IsReadOnly(varName)) {
 		throw invalid_argument("cannot set read-only variable " + varName);
    }
@@ -2374,7 +2372,7 @@ void WriteMATLABHeader(ofstream &MATfile, int mrows, int ncols, int namlen,
 }
 
 // ArGhhh: Record the watched inputs
-inline void RecordSynapticFiring(const int &iFire, const string & FileName) {
+inline void RecordSynapticFiring(const int iFire, const string & FileName) {
    // Find the proper time
    static float dt = 0.0f;
    if (fabs(dt) < verySmallFloat) {
@@ -2520,10 +2518,10 @@ void Present(const xInput &curPattern, DataMatrix &IzhVValues, DataMatrix &IzhUV
    return;
 }
 
-void readDataType(const TArg<string> &Type, DataListType &newDataType, string &newType,
-                  string &newSubType, const string FunctionName,
-                  const CommandLine &ComL, const bool allowFile)
-{
+void readDataType(const TArg<string> &Type, DataListType &newDataType,
+						string& newType, string& newSubType,
+						const string& FunctionName,
+                  const CommandLine &ComL, const bool allowFile) {
    newDataType = DLT_unknown;
    if (Type.getValue() == "seq") {
       newDataType = DLT_sequence;
@@ -2804,8 +2802,7 @@ inline void vswap(vector<T> &arr, int index1, int index2)
 
 // This code is based on an algorithm derived from Numerical Recipes in C, 2nd Ed.,
 // p. 342
-double selectCutOff(unsigned long k, unsigned long n, vector<IxSumwz> &selectFrom)
-{
+double selectCutOff(unsigned int k, unsigned int n, vector<IxSumwz> &selectFrom) {
    if (k == 0) return 0.0f;
 
    // selectCutOff finds the kth largest value (as opposed to the kth smallest
@@ -2817,13 +2814,13 @@ double selectCutOff(unsigned long k, unsigned long n, vector<IxSumwz> &selectFro
    // I.e., these elements are only approximately in reverse sorted order.
    // This algorithm therefore differs from most kth choose algorithms.
 
-   unsigned long int active_partition_begin;
-   unsigned long int active_partition_second; // a_p_begin+1 - used frequently
-   unsigned long int active_partition_end;
-   unsigned long int active_partition_middle;
-   unsigned long int lesser_element_index;
-   unsigned long int greater_element_index;
-   const unsigned long int kth_element = k - 1;
+   unsigned int active_partition_begin;
+   unsigned int active_partition_second; // a_p_begin+1 - used frequently
+   unsigned int active_partition_end;
+   unsigned int active_partition_middle;
+   unsigned int lesser_element_index;
+   unsigned int greater_element_index;
+   const unsigned int kth_element = k - 1;
    struct IxSumwz partition_element;
 
    active_partition_begin = 0;
@@ -3170,7 +3167,7 @@ void SetConnectivity(const int &AllowSelf, const char &dType,
 // At Functions
 //***************
 
-void AddInterneuron(ArgListType &arg) { //AT_FUN
+void AddInterneuron(ArgListType& arg) { //AT_FUN
    // process the function arguments
    static string FunctionName = "AddInterneuron";
    static TArg<string> TypeName("-neurontype", "Neuron type that this interneuron feeds into/out of", "default");
@@ -3212,7 +3209,7 @@ void AddInterneuron(ArgListType &arg) { //AT_FUN
    }
 }
 
-void CreateNeuronType(ArgListType &arg) { //AT_FUN
+void CreateNeuronType(ArgListType& arg) { //AT_FUN
    // process the function arguments
    static string FunctionName = "CreateNeuronType";
    static TArg<string> TypeName("-name", "Name to give the neuron type");
@@ -3289,8 +3286,7 @@ void CreateNeuronType(ArgListType &arg) { //AT_FUN
    }
 }
 
-void CreateNetwork (ArgListType &arg) //AT_FUN
-{
+void CreateNetwork (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "CreateNetwork";
    // AllowSelf defaults to -noself(0)
@@ -3455,12 +3451,9 @@ void CreateNetwork (ArgListType &arg) //AT_FUN
    TotalNumTied = 0;
 
    ResetSTM(); // Sets timeStep = 0
-
-   return;
 }
 
-void CreateSynapseType(ArgListType &arg) //AT_FUN
-{
+void CreateSynapseType(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "CreateSynapseType";
    static TArg<string> TypeName("-name", "Name to give the synapse type");
@@ -3508,8 +3501,7 @@ void CreateSynapseType(ArgListType &arg) //AT_FUN
    SynapseType::addMember(myName, learningRule, mu, NMDArise, alpha, Ksyn, synFailRate, preType, postType);
 }
 
-void CreateVar(ArgListType &arg) //AT_FUN
-{
+void CreateVar(ArgListType& arg) {  // AT_FUN
    if (arg.size() < 1) {
       CALL_ERROR << "Error in CreateVar: expects at least one argument." << ERR_WHERE;
       exit(EXIT_FAILURE);
@@ -3538,12 +3530,9 @@ void CreateVar(ArgListType &arg) //AT_FUN
       }
       SystemVar::AddStrVar(VarName, VarValue);
    }
-
-   return;
 }
 
-void CopyData (ArgListType &arg) //AT_FUN
-{
+void CopyData (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "CopyData";
    static int argunset = true;
@@ -3704,12 +3693,9 @@ void CopyData (ArgListType &arg) //AT_FUN
    }
    SystemVar::insertData(DataName, NewDataMatrix, newDataType);
    delMatrix(TempMat, NumPats);
-
-   return;
 }
 
-void DeleteData (ArgListType &arg) //AT_FUN
-{
+void DeleteData (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "DeleteData";
    if (arg.size() == 0) {
@@ -3727,12 +3713,9 @@ void DeleteData (ArgListType &arg) //AT_FUN
       const string toRemove = it->first;
       SystemVar::deleteData(toRemove);
    }
-
-   return;
 }
 
-void ExportVars (ArgListType &arg) //AT_FUN
-{
+void ExportVars (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "ExportVars";
    static int argunset = true;
@@ -3758,12 +3741,9 @@ void ExportVars (ArgListType &arg) //AT_FUN
    }
 
 	SystemVar::exportVars(FileName.getValue());
-
-   return;
 }
 
-void LoadData (ArgListType &arg) //AT_FUN
-{
+void LoadData (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "LoadData";
    static int argunset = 1;
@@ -3863,12 +3843,9 @@ void LoadData (ArgListType &arg) //AT_FUN
         << newSubType << " " << "from file " << FileName.getValue() << std::endl;
    // Add to the list
    SystemVar::insertData(DataName, NewInMatrix, newDataType);
-
-   return;
 }
 
-void MakeRandSequence(ArgListType &arg) //AT_FUN
-{
+void MakeRandSequence(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "MakeRandSequence";
    static int argunset = true;
@@ -3997,12 +3974,9 @@ void MakeRandSequence(ArgListType &arg) //AT_FUN
       << EndNeuron.getValue() << std::endl;
    }
    SystemVar::insertSequence(SeqName, NewSequence);
-
-   return;
 }
 
-void MakeSequence(ArgListType &arg) //AT_FUN
-{
+void MakeSequence(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "MakeSequence";
    static int argunset = true;
@@ -4102,12 +4076,9 @@ void MakeSequence(ArgListType &arg) //AT_FUN
         << Overlap.getValue() << ", Stutter = " << Stutter.getValue()
         << std::endl;
    SystemVar::insertSequence(SeqName, NewSequence);
-
-   return;
 }
 
-void AppendData (ArgListType &arg) //AT_FUN
-{
+void AppendData (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "AppendData";
    static int argunset = true;
@@ -4168,12 +4139,9 @@ void AppendData (ArgListType &arg) //AT_FUN
                        << " " << newSubType << ".\n";
       }
    }
-
-   return;
 }
 
-void CombineData (ArgListType &arg) //AT_FUN
-{
+void CombineData (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "CombineData";
    static int argunset = true;
@@ -4338,12 +4306,9 @@ void CombineData (ArgListType &arg) //AT_FUN
               << newSubType << "." << std::endl;
    }
    SystemVar::insertData(DataName, BuildMat, newDataType);
-
-   return;
 }
 
-void ResetFiring(ArgListType &arg) //AT_FUN
-{
+void ResetFiring(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "ResetFiring";
    static int argunset = true;
@@ -4355,12 +4320,9 @@ void ResetFiring(ArgListType &arg) //AT_FUN
    ComL.Process(arg, Output::Err());
 
    ResetSTM();
-
-   return;
 }
 
-void SaveData (ArgListType &arg) //AT_FUN
-{
+void SaveData (ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "SaveData";
    static int argunset = true;
@@ -4674,11 +4636,9 @@ void SaveData (ArgListType &arg) //AT_FUN
          << " seconds" << std::endl;
    }
 #endif
-   return;
 }
 
-void SaveWeights(ArgListType &arg) //AT_FUN
-{
+void SaveWeights(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "SaveWeights";
    static int argunset = true;
@@ -4913,11 +4873,9 @@ void SaveWeights(ArgListType &arg) //AT_FUN
          wijout.close();
       }
    }
-   return;
 }
 
-void SetLoopVar(ArgListType &arg) //AT_FUN
-{
+void SetLoopVar(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "SetLoopVar";
    static int argunset = true;
@@ -4974,8 +4932,7 @@ void SetLoopVar(ArgListType &arg) //AT_FUN
    UpdateParams(VarName.getValue(), to_string(CurrentVal), "SetLoopVar");
 }
 
-void SetStream(ArgListType &arg) //AT_FUN
-{
+void SetStream(ArgListType& arg) {  // AT_FUN
    // process the function arguments
    static string FunctionName = "SetStream";
    static int argunset = true;
@@ -5029,12 +4986,9 @@ void SetStream(ArgListType &arg) //AT_FUN
          Output::setStreams(Output::Out(), *stdErr);
       }
    }
-
-   return;
 }
 
-void SetVar(ArgListType &arg) //AT_FUN
-{
+void SetVar(ArgListType& arg) {  // AT_FUN
    if (arg.size() < 1) {
       CALL_ERROR << "Error in SetVar: expects at least one argument." << ERR_WHERE;
       exit(EXIT_FAILURE);
@@ -5098,12 +5052,9 @@ void SetVar(ArgListType &arg) //AT_FUN
 			}
 		}
    }
-
-   return;
 }
 
-void Sim(ArgListType &arg) //AT_FUN
-{
+void Sim(ArgListType& arg) {  // AT_FUN
    // In the multi-processor version of Sim, there's no need for any data interchange;
    // All data that Sim needs is available on all nodes
 
@@ -5442,12 +5393,9 @@ void Sim(ArgListType &arg) //AT_FUN
          Output::Out() << "Wrote Similarity Matrix to " << FileName.getValue() << "\n";
       }
    }
-
-   return;
 }
 
-void Test(ArgListType &arg) //AT_FUN
-{
+void Test(ArgListType& arg) {  // AT_FUN
 #if defined(TIMING_MODE)
    long long start,
         finish;
@@ -5797,12 +5745,9 @@ void Test(ArgListType &arg) //AT_FUN
       * Output::Out() << "Elapsed testing time = " << (finish - start) * 1.0 / TICKS_PER_SEC
                       << " seconds" << std::endl;
 #endif
-
-   return;
 }
 
-void Train(ArgListType &arg) //AT_FUN
-{
+void Train(ArgListType& arg) {  // AT_FUN
 #if defined(TIMING_MODE)
    long long start,
         finish;
@@ -6259,8 +6204,7 @@ void Train(ArgListType &arg) //AT_FUN
 // Caret Functions
 //******************
 
-string PickSeq (ArgListType &arg) //CARET_FUN
-{
+string PickSeq (ArgListType& arg) { // CARET_FUN
    // process the function arguments
    static string FunctionName = "PickSeq";
    static int argunset = true;
@@ -6326,8 +6270,7 @@ string PickSeq (ArgListType &arg) //CARET_FUN
    return EMPTYSTR;
 }
 
-string Num2Int(ArgListType &arg) //CARET_FUN
-{
+string Num2Int(ArgListType& arg) {  // CARET_FUN
    if (arg.size() != 1) {
       CALL_ERROR << "Error in Num2Int: expects exactly one argument." << ERR_WHERE;
       exit(EXIT_FAILURE);
@@ -6343,8 +6286,7 @@ string Num2Int(ArgListType &arg) //CARET_FUN
    return to_string(from_string<int>(arg.at(0).first));
 }
 
-void Context(ArgListType &arg) //AT_FUN
-{
+void Context(ArgListType& arg) {  // AT_FUN
    //@Context is a root-only function
    IFROOTNODE {
       // process the function arguments
@@ -6563,8 +6505,7 @@ void Context(ArgListType &arg) //AT_FUN
    return;
 }
 
-void FileReset(ArgListType &arg) //AT_FUN
-{
+void FileReset(ArgListType& arg) {  // AT_FUN
 // Only the root node should be involved in resetting files
    IFROOTNODE {
       if (arg.size() == 0) {
@@ -6594,12 +6535,10 @@ void FileReset(ArgListType &arg) //AT_FUN
    //  If Node 1 executes these two lines, THEN Node 0 executes the
    //  call to @FileReset, we're screwed.
    ParallelInfo::Barrier();
-   #endif
-   return;
+#endif
 }
 
-string RandomSeed (ArgListType &arg) //CARET_FUN
-{
+string RandomSeed (ArgListType& arg) {  // CARET_FUN
    if (arg.size() > 0) {
       if (arg.at(0).first == "-help") {
          Output::Err() << "RandomSeed -help\n\n"
@@ -6613,8 +6552,7 @@ string RandomSeed (ArgListType &arg) //CARET_FUN
    return Calc::RandomUserSeed();
 }
 
-void SeedRNG(ArgListType &arg) //AT_FUN
-{
+void SeedRNG(ArgListType& arg) {  // AT_FUN
    if (arg.size() > 0) {
       if (arg.at(0).first == "-help") {
          Output::Err() << "SeedRNG -help\n\n"
@@ -6628,8 +6566,7 @@ void SeedRNG(ArgListType &arg) //AT_FUN
    program::Main().setAllSeeds();
 }
 
-void CreateAnalysis(ArgListType &arg) //AT_FUN
-{
+void CreateAnalysis(ArgListType& arg) {  // AT_FUN
    int num = arg.size();
    if (num == 0) {
       CALL_ERROR << "Error in CreateAnalysis: multiple arguments expected." << ERR_WHERE;
@@ -6700,11 +6637,9 @@ void CreateAnalysis(ArgListType &arg) //AT_FUN
          ++i; // Next token is [
       }
    }
-   return;
 }
 
-void UpdateAnalysis( string name )
-{
+void UpdateAnalysis(const string& name) {
    string FunctionName = "Analysis";
    CommandLine ComL(FunctionName);
 
@@ -6732,8 +6667,7 @@ void UpdateAnalysis( string name )
    }
 }
 
-void Analysis(ArgListType &arg) //AT_FUN
-{
+void Analysis(ArgListType& arg) {  // AT_FUN
    IFROOTNODE {
       if (arg.size() == 0) {
          CALL_ERROR << "Error in Analysis: multiple arguments expected." << ERR_WHERE;
@@ -6753,11 +6687,9 @@ void Analysis(ArgListType &arg) //AT_FUN
    for (ArgListTypeIt it = arg.begin(); it != arg.end(); it++) {
       UpdateAnalysis(it->first);
    }
-   return;
 }
 
-string SumData (ArgListType &arg) //CARET_FUN
-{
+string SumData(ArgListType& arg) {  // CARET_FUN
    // process the function arguments
    static string FunctionName = "SumData";
    static int argunset = true;
@@ -6818,7 +6750,7 @@ string SumData (ArgListType &arg) //CARET_FUN
    return to_string(sum);
 }
 
-string PatternLength(ArgListType &arg) { //CARET_FUN
+string PatternLength(ArgListType& arg) {  // CARET_FUN
    // process the function arguments
    static string FunctionName = "PatternLength";
    static int argunset = true;

@@ -1,10 +1,26 @@
-// Noise.cpp
-//
-// Random number generation from uniform and normal distributions
-//
-// Created : 6/17/97 - Matt Harrison
-// Update :  7/19/00 - Patryk Laurent(seeding GCC RNG)
-//
+/***************************************************************************
+ * Noise.cpp
+ *
+ *  Random number generation from uniform and normal distributions
+ *
+ *  Created : 6/17/97 - Matt Harrison
+ *
+ *  Copyright 2011 Informed Simplifications, LLC
+ *  This file is part of NeuroJet.
+ *
+ *  NeuroJet is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NeuroJet is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
+ ****************************************************************************/
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Noise()
@@ -67,34 +83,25 @@
 using namespace std;
 #include <cmath>
 
-Noise::Noise(const long unsigned int &seed, const char &type)
-{
-   Reset(seed, type);
+Noise::Noise(long unsigned int seed, char type) {
+  Reset(seed, type);
 }
 
-void Noise::Reset(const unsigned long int &seed, const char &type)
-{
-   //~ // Patryk Laurent:  Seeding the Linux GCC random number
-   //~ // generator.  7/19/00
-   //~ srand(seed);
-
-   if ((type == 't') || (type == 'T')) {
-      UseMRNG = false;
-      TRandInit(seed);
-   // We used to also have another option from Numerical Recipes in C, but
-   // removed it in order to make the code open source.
-   } else {
-      cerr << "Noise type " << type << "unknown. Must be 't'." << endl;
-      exit(EXIT_FAILURE);
-   }
-   IsInit = 1;
-
-   return;
+void Noise::Reset(unsigned long int seed, char type) {
+  if ((type == 't') || (type == 'T')) {
+    UseMRNG = false;
+    TRandInit(seed);
+    // We used to also have another option from Numerical Recipes in C, but
+    // removed it in order to make the code open source.
+  } else {
+    cerr << "Noise type " << type << "unknown. Must be 't'." << endl;
+    exit(EXIT_FAILURE);
+  }
+  IsInit = 1;
 }
 
-void Noise::Uniform(double *vec, const int &rows, const double &low,
-                    const double &high)
-{
+void Noise::Uniform(double *vec, int rows, double low,
+                    double high) {
    RandDblVect(vec, rows);
    double range = high - low;
    for (int i = 0; i < rows; i++) {
@@ -104,9 +111,8 @@ void Noise::Uniform(double *vec, const int &rows, const double &low,
    return;
 }
 
-void Noise::Uniform(float *vec, const int &rows, const double &low,
-                    const double &high)
-{
+void Noise::Uniform(float *vec, int rows, double low,
+                    double high) {
    TRandFltVect(vec, rows);
    float range = static_cast<float>(high - low);
    float flow = static_cast<float>(low);
@@ -117,9 +123,8 @@ void Noise::Uniform(float *vec, const int &rows, const double &low,
    return;
 }
 
-void Noise::Uniform(double **matrix, const int &rows, const int &cols,
-                    const double &low, const double &high)
-{
+void Noise::Uniform(double **matrix, int rows, int cols,
+                    double low, double high) {
    TRandDblMat(matrix, rows, cols);
    double range = high - low;
    for (int i = 0; i < rows; i++)
@@ -130,9 +135,8 @@ void Noise::Uniform(double **matrix, const int &rows, const int &cols,
    return;
 }
 
-void Noise::Uniform(float **matrix, const int &rows, const int &cols,
-                    const double &low, const double &high)
-{
+void Noise::Uniform(float **matrix, int rows, int cols,
+                    double low, double high) {
    TRandFltMat(matrix, rows, cols);
    float range = static_cast<float>(high - low);
    float flow = static_cast<float>(low);
@@ -144,9 +148,8 @@ void Noise::Uniform(float **matrix, const int &rows, const int &cols,
    return;
 }
 
-void Noise::Normal(double *vec, const int &rows,
-                   const double &mu, const double &sigma)
-{
+void Noise::Normal(double *vec, int rows,
+                   double mu, double sigma) {
    RandDblVect(vec, rows);
    int numrows = 2 * (rows / 2);
    double temp1, temp2;
@@ -167,9 +170,8 @@ void Noise::Normal(double *vec, const int &rows,
    return;
 }
 
-void Noise::Normal(float *vec, const int &rows,
-                   const double &mu, const double &sigma)
-{
+void Noise::Normal(float *vec, int rows,
+                   double mu, double sigma) {
    float fmu = static_cast<float>(mu);
    float fsigma = static_cast<float>(sigma);
    TRandFltVect(vec, rows);
@@ -190,82 +192,65 @@ void Noise::Normal(float *vec, const int &rows,
       vec[j] *= fsigma;
       vec[j] += fmu;
    }
-   return;
 }
 
-void Noise::Normal(double **matrix, const int &rows, const int &cols,
-                   const double &mu, const double &sigma)
-{
+void Noise::Normal(double **matrix, int rows, int cols,
+                   double mu, double sigma) {
    for (int i = 0; i < rows; i++) {
       Normal(matrix[i], cols, mu, sigma);
    }
-   return;
 }
 
-void Noise::Normal(float **matrix, const int &rows, const int &cols,
-                   const double &mu, const double &sigma)
-{
+void Noise::Normal(float **matrix, int rows, int cols,
+                   double mu, double sigma) {
    for (int i = 0; i < rows; i++) {
       Normal(matrix[i], cols, mu, sigma);
    }
-   return;
 }
 
-void Noise::RandInt(int *vec, const int &rows, const int &low,
-                    const int &high)
-{
+void Noise::RandInt(int *vec, int rows, int low,
+                    int high) {
    for (int i = 0; i < rows; i++) {
       vec[i] = RandInt(low, high);
    }
-   return;
 }
-void Noise::RandInt(int **matrix, const int &rows, const int &cols,
-                    const int &low, const int &high)
-{
+void Noise::RandInt(int **matrix, int rows, int cols,
+                    int low, int high) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
          matrix[i][j] = RandInt(low, high);
       }
    }
-   return;
 }
 
-void Noise::Bernoulli(int *vec, const int &rows, const double &rate)
-{
+void Noise::Bernoulli(int *vec, int rows, double rate) {
    for (int i = 0; i < rows; i++) {
       vec[i] = Bernoulli(rate);
    }
-   return;
 }
 
-void Noise::Bernoulli(int **matrix, const int &rows, const int &cols,
-                      const double &rate)
-{
+void Noise::Bernoulli(int **matrix, int rows, int cols,
+                      double rate) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
          matrix[i][j] = Bernoulli(rate);
       }
    }
-   return;
 }
 
-void Noise::Bernoulli(bool * vec, const int &rows, const double &rate)
-{
+void Noise::Bernoulli(bool * vec, int rows, double rate) {
    for (int i = 0; i < rows; i++) {
       vec[i] = Bernoulli(rate);
    }
-   return;
 }
 
-void Noise::Bernoulli(bool ** matrix, const int &rows, const int &cols,
-                      const double &rate)
-{
+void Noise::Bernoulli(bool ** matrix, int rows, int cols,
+                      double rate) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
          matrix[i][j] = Bernoulli(rate);
       }
    }
-   return;
 }
 
 ///////////////////////////////////
@@ -289,8 +274,7 @@ void Noise::Bernoulli(bool ** matrix, const int &rows, const int &cols,
 
 // Noise RandInit function
 // Initializes the private data members based on the seed
-void Noise::TRandInit(const unsigned long int &Seed)
-{
+void Noise::TRandInit(unsigned long int Seed) {
    QNNumber = 0;
    QNArray[0] = Seed;
    // QNArray[0] = 0x95f24dabL;
@@ -325,11 +309,9 @@ void Noise::TRandInit(const unsigned long int &Seed)
    for (int i = 0; i < 100; i++) {
       TRandDbl();
    }
-   return;
 }
 
-double Noise::TRandDbl()
-{
+double Noise::TRandDbl() {
    unsigned long y;
 
    // generate 25 words at one time
@@ -360,8 +342,7 @@ double Noise::TRandDbl()
    return(static_cast<double>(y) / static_cast<unsigned long>(0xffffffffL));
 }
 
-void Noise::TRandDblVect(double *vec, int rows)
-{
+void Noise::TRandDblVect(double *vec, int rows) {
    // get a random number for each index
    for (int i = 0; i < rows; i++) {
       unsigned long y;
@@ -390,12 +371,9 @@ void Noise::TRandDblVect(double *vec, int rows)
       // put the new random value in Vect
       vec[i] = (static_cast<double>(y) / static_cast<unsigned long>(0xffffffffL));
    }
-   // return
-   return;
 }
 
-void Noise::TRandFltVect(float *vec, int rows)
-{
+void Noise::TRandFltVect(float *vec, int rows) {
    // get a random number for each index
    for (int i = 0; i < rows; i++) {
       unsigned long y;
@@ -423,14 +401,11 @@ void Noise::TRandFltVect(float *vec, int rows)
       QNNumber++;
       // put the new random value in Vect
       vec[i] = static_cast<float>(static_cast<double>(y) /
-                                      static_cast<unsigned long>(0xffffffffL));
+                                  static_cast<unsigned long>(0xffffffffL));
    }
-   // return
-   return;
 }
 
-void Noise::TRandDblMat(double **matrix, int rows, int cols)
-{
+void Noise::TRandDblMat(double **matrix, int rows, int cols) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
          unsigned long y;
@@ -460,11 +435,9 @@ void Noise::TRandDblMat(double **matrix, int rows, int cols)
          matrix[i][j] = (static_cast<double>(y) / static_cast<unsigned long>(0xffffffffL));
       }
    }
-   return;
 }
 
-void Noise::TRandFltMat(float **matrix, int rows, int cols)
-{
+void Noise::TRandFltMat(float **matrix, int rows, int cols) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
          unsigned long y;
@@ -495,5 +468,4 @@ void Noise::TRandFltMat(float **matrix, int rows, int cols)
                                       static_cast<unsigned long>(0xffffffffL));
       }
    }
-   return;
 }

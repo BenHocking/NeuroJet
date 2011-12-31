@@ -1,13 +1,26 @@
-///////////////////////////////////////////////////////////////////////////////
-// ArgFuncts.hpp
-//
-// prototypes and definitions for C++ function argument processing,
-//
-// Matt Harrison
-//
-// Last Update: 6/02/98
-//
-///////////////////////////////////////////////////////////////////////////////
+/***************************************************************************
+ * ArgFuncts.hpp
+ *
+ *  Prototypes and definitions for C++ function argument processing,
+ *
+ *  Matt Harrison
+ *
+ *  Copyright 2011 Informed Simplifications, LLC
+ *  This file is part of NeuroJet.
+ *
+ *  NeuroJet is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NeuroJet is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
+ ****************************************************************************/
 //
 // High Level Command Line Processing
 //
@@ -17,7 +30,8 @@
 // class DblArg(const string flag, const string help)
 // class StrArg(const string flag, const string help, string default)
 // class StrArg(const string flag, const string help)
-// class FlagArg(const string onflag, const string offflag, const string help, int default)
+// class FlagArg(const string onflag, const string offflag, const string help,
+//               int default)
 // class FlagArg(const string onflag, const string offflag, const string help)
 //
 // class CommandLine(string FunctionName)
@@ -27,7 +41,8 @@
 // CommandLine.FlagSet(int numflags, FlagArg * arg1, ...)
 // CommandLine.HelpSet(string helpstr);
 // CommandLine.Process(int argc, const string argv[], ostream& errorout)
-// CommandLine.Process(int argc, const string argv[], ostream& errorout, ostream& callout)
+// CommandLine.Process(int argc, const string argv[], ostream& errorout,
+//                     ostream& callout)
 // CommandLine.DisplayHelp(ostream &helpout)
 //
 // The IntArg, DblArg, and StrArg classes allow you to define integers,
@@ -80,40 +95,24 @@
 #if !defined(ARGFUNCTS_HPP)
 #define ARGFUNCTS_HPP
 
-#if !defined(STRINGUTILS_HPP)
-#  include "utils/StringUtils.hpp"
-#endif
-
 #include <algorithm>
-#include <functional>
+#include <cctype>
 #include <cmath>
 #include <cstdarg>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <list>
 #include <map>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <numeric>
-#include <cctype>
 
-using neurojet::stringutils::to_string;
-using neurojet::stringutils::from_string;
-
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::list;
-using std::map;
-using std::ostream;
-using std::pair;
-using std::setw;
-using std::string;
-using std::vector;
-using std::size_t;
-using std::ptr_fun;
+#if !defined(STRINGUTILS_HPP)
+#  include "utils/StringUtils.hpp"
+#endif
 
 #if !defined(MATRIXMEANHELPER_HPP)
 #   include "MatrixMeanHelper.hpp"
@@ -139,13 +138,30 @@ using std::ptr_fun;
 #   include "Output.hpp"
 #endif
 
-using std::min;
-using std::max;
+using std::cerr;
+using std::cout;
+using std::endl;
 using std::find;
+using std::list;
+using std::map;
+using std::max;
+using std::min;
+using std::ostream;
+using std::pair;
+using std::ptr_fun;
+using std::setw;
+using std::size_t;
+using std::string;
 using std::transform;
+using std::vector;
+
+using neurojet::stringutils::to_string;
+using neurojet::stringutils::from_string;
+
 
 ////////////////////////////////////////////////////////////////////////////////
-// Some matrix/vector functions (see also setMatrixRange, which depends on IntArg)
+// Some matrix/vector functions (see also setMatrixRange, which depends on
+// IntArg)
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
@@ -167,8 +183,10 @@ double matrixMean(const vector<vector<T> > &toAvg) {
 }
 
 template <typename T>
-double matrixMoment(const vector<vector<T> > &Matrix, const float avg, const int moment) {
-  return for_each(Matrix.begin(), Matrix.end(), MatrixMomentHelper<T>(avg, moment)).result();
+double matrixMoment(const vector<vector<T> > &Matrix, const float avg,
+                    const int moment) {
+  return for_each(Matrix.begin(), Matrix.end(),
+                  MatrixMomentHelper<T>(avg, moment)).result();
 }
 
 template <typename T>
@@ -178,95 +196,104 @@ double matrixAvgSS(const vector<vector<T> > &Matrix) {
 
 template <typename T>
 double matrixVar(const vector<vector<T> > &Matrix) {
-   const double avg = matrixMean(Matrix);
-   return matrixAvgSS(Matrix) - avg * avg;
+  const double avg = matrixMean(Matrix);
+  return matrixAvgSS(Matrix) - avg * avg;
 }
 
 template <typename T>
 double matrixSkew(const vector<vector<T> > &Matrix) {
-   const double avg = matrixMean(Matrix);
-   const double var = matrixVar(Matrix);
-   const double moment3 = matrixMoment(Matrix, avg, 3);
-   return moment3 / pow(var, 1.5);
+  const double avg = matrixMean(Matrix);
+  const double var = matrixVar(Matrix);
+  const double moment3 = matrixMoment(Matrix, avg, 3);
+  return moment3 / pow(var, 1.5);
 }
 
 template <typename T>
 double matrixKurt(const vector<vector<T> > &Matrix) {
-   const double avg = matrixMean(Matrix);
-   const double var = matrixVar(Matrix);
-   const double moment4 = matrixMoment(Matrix, avg, 4);
-   // The modern definition of kurtosis includes the "-3" term
-   // Thus, a normal distribution has zero kurtosis
-   return moment4 / (var*var) - 3;
+  const double avg = matrixMean(Matrix);
+  const double var = matrixVar(Matrix);
+  const double moment4 = matrixMoment(Matrix, avg, 4);
+  // The modern definition of kurtosis includes the "-3" term
+  // Thus, a normal distribution has zero kurtosis
+  return moment4 / (var*var) - 3;
 }
 
 template<class T>
-inline unsigned int findMaxSize(const T &dataIn, const unsigned int PriorMax = 0) {
-   typename T::const_iterator it;
-   unsigned int MaxSize = PriorMax;
-   for (it = dataIn.begin(); it != dataIn.end(); it++) {
-      updateMax(MaxSize, static_cast<unsigned int>(it->size()));
-   }
-   return MaxSize;
+inline unsigned int findMaxSize(const T &dataIn,
+                                const unsigned int PriorMax = 0) {
+  typename T::const_iterator it;
+  unsigned int MaxSize = PriorMax;
+  for (it = dataIn.begin(); it != dataIn.end(); it++) {
+    updateMax(MaxSize, static_cast<unsigned int>(it->size()));
+  }
+  return MaxSize;
 }
 
-template<> // Template specialization
-inline unsigned int findMaxSize(const UIPtnSequence &dataIn, const unsigned int PriorMax) {
-   unsigned int MaxSize = PriorMax;
-   for (UIPtnSequenceCIt it = dataIn.begin(); it != dataIn.end(); it++) {
-      updateMax(MaxSize, it->back()+1); // assumes ptns in dataIn are sorted
-   }
-   return MaxSize;
+template<>  // Template specialization
+inline unsigned int findMaxSize(const UIPtnSequence &dataIn,
+                                const unsigned int PriorMax) {
+  unsigned int MaxSize = PriorMax;
+  for (UIPtnSequenceCIt it = dataIn.begin(); it != dataIn.end(); it++) {
+    updateMax(MaxSize, it->back()+1);  // assumes ptns in dataIn are sorted
+  }
+  return MaxSize;
 }
 
 // works on vector<vector<foo> >, list<list<foo> >, list<vector<foo> >, etc.
 // but slower than necessary
 template <typename T>
 T transposeMatrixSlow(const T &toTranspose) {
-   unsigned int oldRowSize = toTranspose.size();
-   unsigned int oldColSize = findMaxSize(toTranspose);
-   typename T::const_iterator itSrcRow;
-   typename T::value_type::const_iterator itSrcCol;
-   typename T::iterator itDstRow;
-   typename T::value_type::iterator itDstCol;
-   typename T::value_type emptySubType(oldRowSize);
-   T toReturn(oldColSize, emptySubType);   
-   itDstRow = toReturn.begin();
-   unsigned int dstColCnt = 0;
-   for (itSrcRow = toTranspose.begin(); itSrcRow != toTranspose.end(); ++itSrcRow, ++dstColCnt) {
-      itDstRow = toReturn.begin();
-      for (itSrcCol = itSrcRow->begin(); itSrcCol != itSrcRow->end(); ++itSrcCol, ++itDstRow) {
-         itDstCol = itDstRow->begin();
-         for (unsigned int inc = 0; inc < dstColCnt; ++inc, ++itDstCol) {}
-         *itDstCol = *itSrcCol;
-      }
-   }
-   return toReturn;
+  unsigned int oldRowSize = toTranspose.size();
+  unsigned int oldColSize = findMaxSize(toTranspose);
+  typename T::const_iterator itSrcRow;
+  typename T::value_type::const_iterator itSrcCol;
+  typename T::iterator itDstRow;
+  typename T::value_type::iterator itDstCol;
+  typename T::value_type emptySubType(oldRowSize);
+  T toReturn(oldColSize, emptySubType);
+  itDstRow = toReturn.begin();
+  unsigned int dstColCnt = 0;
+  for (itSrcRow = toTranspose.begin(); itSrcRow != toTranspose.end();
+       ++itSrcRow, ++dstColCnt) {
+    itDstRow = toReturn.begin();
+    for (itSrcCol = itSrcRow->begin(); itSrcCol != itSrcRow->end();
+         ++itSrcCol, ++itDstRow) {
+      itDstCol = itDstRow->begin();
+      for (unsigned int inc = 0; inc < dstColCnt; ++inc, ++itDstCol) {}
+      *itDstCol = *itSrcCol;
+    }
+  }
+  return toReturn;
 }
 
 template <typename T>
 vector<vector<T> > transposeMatrix(const vector<vector<T> > &toTranspose) {
-   unsigned int oldRowSize = toTranspose.size();
-   unsigned int oldColSize = findMaxSize(toTranspose);
-   typename vector<vector<T> >::const_iterator itSrcRow;
-   typename vector<T>::const_iterator itSrcCol;
-   typename vector<vector<T> >::iterator itDstRow;
-   vector<vector<T> > toReturn(oldColSize, vector<T>(oldRowSize, static_cast<T>(0)));
-   itDstRow = toReturn.begin();
-   unsigned int dstColCnt = 0;
-   for (itSrcRow = toTranspose.begin(); itSrcRow != toTranspose.end(); ++itSrcRow, ++dstColCnt) {
-      itDstRow = toReturn.begin();
-      for (itSrcCol = itSrcRow->begin(); itSrcCol != itSrcRow->end(); ++itSrcCol, ++itDstRow) {
-         (*itDstRow)[dstColCnt] = *itSrcCol;
-      }
-   }
-   return toReturn;
+  unsigned int oldRowSize = toTranspose.size();
+  unsigned int oldColSize = findMaxSize(toTranspose);
+  typename vector<vector<T> >::const_iterator itSrcRow;
+  typename vector<T>::const_iterator itSrcCol;
+  typename vector<vector<T> >::iterator itDstRow;
+  vector<vector<T> > toReturn(oldColSize, vector<T>(oldRowSize,
+                                                    static_cast<T>(0)));
+  itDstRow = toReturn.begin();
+  unsigned int dstColCnt = 0;
+  for (itSrcRow = toTranspose.begin(); itSrcRow != toTranspose.end();
+       ++itSrcRow, ++dstColCnt) {
+    itDstRow = toReturn.begin();
+    for (itSrcCol = itSrcRow->begin(); itSrcCol != itSrcRow->end();
+         ++itSrcCol, ++itDstRow) {
+      (*itDstRow)[dstColCnt] = *itSrcCol;
+    }
+  }
+  return toReturn;
 }
 
 // first & last are 1-based, VecIn & toReturn are 0-based
 template<typename T>
-inline vector<T> SubVector(const vector<T> &VecIn, unsigned int first, unsigned int last) {
-  unsigned int useLast = last == 0 ? VecIn.size() : min(last, static_cast<unsigned int>(VecIn.size()));
+inline vector<T> SubVector(const vector<T> &VecIn, unsigned int first,
+                           unsigned int last) {
+  unsigned int useLast = last == 0 ? VecIn.size()
+    : min(last, static_cast<unsigned int>(VecIn.size()));
   vector<T> toReturn(useLast - first + 1, static_cast<T>(0));
   copy(VecIn.begin() + first - 1, VecIn.begin() + useLast, toReturn.begin());
   return toReturn;
@@ -275,8 +302,8 @@ inline vector<T> SubVector(const vector<T> &VecIn, unsigned int first, unsigned 
 // first & last are 1-based, mtxIn & toReturn are 0-based
 template<typename T>
 inline vector<vector<T> > SubMatrix(const vector<vector<T> > &mtxIn,
-                                  unsigned int firstT, unsigned int lastT,
-                                  unsigned int firstN, unsigned int lastN) {
+                                    unsigned int firstT, unsigned int lastT,
+                                    unsigned int firstN, unsigned int lastN) {
   unsigned int numOldRows = mtxIn.at(0).size();
   unsigned int numOldCols = mtxIn.size();
   unsigned int useLastRow = lastT == 0 ? numOldRows : min(lastT, numOldRows);
@@ -287,7 +314,7 @@ inline vector<vector<T> > SubMatrix(const vector<vector<T> > &mtxIn,
   typename vector<vector<T> >::const_iterator MCIt = mtxIn.begin() + firstT - 1;
   typename vector<vector<T> >::iterator MIt = toReturn.begin();
   for (unsigned int i = firstT-1; i < useLastRow; ++i, ++MCIt, ++MIt) {
-     *MIt = SubVector(*MCIt, firstN, useLastCol);
+    *MIt = SubVector(*MCIt, firstN, useLastCol);
   }
   return toReturn;
 }
@@ -310,43 +337,41 @@ inline int iceil(const T data_in) { return static_cast<int>(ceil(data_in)); }
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-inline void delPtr(T &ptr)
-{
-   if (ptr) {
-      delete ptr;
-      ptr = NULL;
-   }
+inline void delPtr(T &ptr) {
+  if (ptr) {
+    delete ptr;
+    ptr = NULL;
+  }
 }
 
 template<typename T>
-inline void delArray(T &ptr)
-{
-   if (ptr) {
-      delete[] ptr;
-      ptr = NULL;
-   }
+inline void delArray(T &ptr) {
+  if (ptr) {
+    delete[] ptr;
+    ptr = NULL;
+  }
 }
 
 template<typename T>
-inline void delMatrix(T &ptr, int height)
-{
-   if (ptr) {
-      for (int i=0; i<height; i++)
-         delArray(ptr[i]);
-      delete[] ptr;
-      ptr = NULL;
-   }
+inline void delMatrix(T &ptr, int height) {
+  if (ptr) {
+    for (int i = 0; i < height; i++) {
+      delArray(ptr[i]);
+    }
+    delete[] ptr;
+    ptr = NULL;
+  }
 }
 
 template<typename T>
-inline void delTensor(T &ptr, int otherDim, int height)
-{
-   if (ptr) {
-      for (int i=0; i<otherDim; i++)
-         delMatrix(ptr[i], height);
-      delete[] ptr;
-      ptr = NULL;
-   }
+inline void delTensor(T &ptr, int otherDim, int height) {
+  if (ptr) {
+    for (int i = 0; i < otherDim; i++) {
+      delMatrix(ptr[i], height);
+    }
+    delete[] ptr;
+    ptr = NULL;
+  }
 }
 
 inline void memcheck(const void * test, const string str = "Out of memory");
@@ -357,118 +382,122 @@ inline void memcheck(const void * test, const string str = "Out of memory");
 
 template<typename T>
 inline bool setTValue(ArgListType &argv, const string& Flag, T &Value,
-                     const bool IsDeault, const T Deault) {
-   // Find an argument that matches the flag, but that hasn't already been found
-   ArgListTypeIt thing1 = find(argv.begin(), argv.end(), ArgType(Flag, false));
-   if (thing1 != argv.end()) {
-      // Check out its corresponding value
-      ArgListTypeIt thing2 = thing1 + 1;
-      // If we're not at the end and not already marked as being found
-      if ((thing2 != argv.end()) && (!thing2->second)) {
-         // Mark it and its value as being accounted for
-         thing1->second = true;
-         thing2->second = true;
-         Value = from_string<T>(thing2->first);
-         return true;
-      }
-   }
-   if (!IsDeault) return false;
-   Value = Deault;
-   return true;
+                      const bool IsDeault, const T Deault) {
+  // Find an argument that matches the flag, but that hasn't already been found
+  ArgListTypeIt thing1 = find(argv.begin(), argv.end(), ArgType(Flag, false));
+  if (thing1 != argv.end()) {
+    // Check out its corresponding value
+    ArgListTypeIt thing2 = thing1 + 1;
+    // If we're not at the end and not already marked as being found
+    if ((thing2 != argv.end()) && (!thing2->second)) {
+      // Mark it and its value as being accounted for
+      thing1->second = true;
+      thing2->second = true;
+      Value = from_string<T>(thing2->first);
+      return true;
+    }
+  }
+  if (!IsDeault) return false;
+  Value = Deault;
+  return true;
 }
 
 template<typename T>
 string setListValue(ArgListType &argv, const string& Flag,
-                 vector<T> &Value, const bool IsDeault, const vector<T> Deault) {
-   // Find an argument that matches the flag, but that hasn't already been found
-   ArgListTypeIt flagpos = find(argv.begin(), argv.end(), ArgType(Flag, false));
-   ArgListTypeIt assignpos = flagpos;
-   // Move to the value corresponding to the flag
-   if (assignpos != argv.end()) assignpos++;
-   if (assignpos == argv.end() && !IsDeault) {
-      return "Unable to find required flag " + Flag;
-   }
-   if (assignpos == argv.end()) {
-      // Mark the flag accounted for if it was given with no arguments and
-      // default is allowed
-      if (flagpos != argv.end()) flagpos->second = true;
-      Value = Deault;
-   } else {
-      int numvals = from_string<int>(assignpos->first);
-      if (numvals < 0) {
-         return "Bad number of arguments following " + Flag;
+                    vector<T> &Value, const bool IsDeault,
+                    const vector<T> Deault) {
+  // Find an argument that matches the flag, but that hasn't already been found
+  ArgListTypeIt flagpos = find(argv.begin(), argv.end(), ArgType(Flag, false));
+  ArgListTypeIt assignpos = flagpos;
+  // Move to the value corresponding to the flag
+  if (assignpos != argv.end()) assignpos++;
+  if (assignpos == argv.end() && !IsDeault) {
+    return "Unable to find required flag " + Flag;
+  }
+  if (assignpos == argv.end()) {
+    // Mark the flag accounted for if it was given with no arguments and
+    // default is allowed
+    if (flagpos != argv.end()) flagpos->second = true;
+    Value = Deault;
+  } else {
+    int numvals = from_string<int>(assignpos->first);
+    if (numvals < 0) {
+      return "Bad number of arguments following " + Flag;
+    }
+    Value = vector<T>(numvals);
+    // Mark the flag accounted for
+    flagpos->second = true;
+    // Mark the # accounted for
+    assignpos->second = true;
+    assignpos++;  // Move to the first item in the list (after the #)
+    for (int j = 0; j < numvals; j++, assignpos++) {
+      // If the argument is already accounted for
+      if (assignpos->second) {
+        return "Unable to find " + to_string(numvals) + " arguments after "
+          + Flag;
       }
-      Value = vector<T>(numvals);
-      // Mark the flag accounted for
-      flagpos->second = true;
-      // Mark the # accounted for
+      // Mark the value accounted for
       assignpos->second = true;
-      assignpos++; // Move to the first item in the list (after the #)
-      for (int j = 0; j < numvals; j++, assignpos++) {
-         // If the argument is already accounted for
-         if (assignpos->second) {
-            return "Unable to find " + to_string(numvals) + " arguments after " + Flag;
-         }
-         // Mark the value accounted for
-         assignpos->second = true;
 #if defined(CHECK_BOUNDS)
-         Value.at(j) = from_string<T>(assignpos->first);
+      Value.at(j) = from_string<T>(assignpos->first);
 #else
-         Value[j] = from_string<T>(assignpos->first);
+      Value[j] = from_string<T>(assignpos->first);
 #endif
-      }
-   }
-   return EMPTYSTR; // No errMsg
+    }
+  }
+  return EMPTYSTR;  // No errMsg
 }
 
 template<typename T>
 inline void printTHelp(ostream &os, const string &Flag, const string &Help,
-                       const bool IsDeault, const T &Deault)
-{
-   int w = 10;
-   string s = " : ";
-   os << std::setw(w) << Flag << s << std::setw(w)
-      << (IsDeault ? to_string<T>(Deault) : "{required}")
-      << s << Help << "\n";
+                       const bool IsDeault, const T &Deault) {
+  int w = 10;
+  string s = " : ";
+  os << std::setw(w) << Flag << s << std::setw(w)
+     << (IsDeault ? to_string<T>(Deault) : "{required}")
+     << s << Help << "\n";
 }
 
 template<typename T>
 void printListHelp(ostream &os, const string &Flag, const string &Help,
                    const bool IsDeault, const vector<T> &Deault) {
-   int w = 10;
-   string s = " : ";
-   os << std::setw(w - 3) << Flag << " # " << s << std::setw(w);
-   if (IsDeault) {
-      string nada = "{0 items}";
-      os << (Deault.size() ? to_string<T>(Deault.at(0)) : nada) << s;
-      for (unsigned int i = 1; i < Deault.size(); i++)
-         os << "\n" << std::setw(w) << " " << s << std::setw(w) << Deault[i] << s;
-   } else {
-      os << "{required}" << s;
-   }
-   os << Help << "\n";
+  int w = 10;
+  string s = " : ";
+  os << std::setw(w - 3) << Flag << " # " << s << std::setw(w);
+  if (IsDeault) {
+    string nada = "{0 items}";
+    os << (Deault.size() ? to_string<T>(Deault.at(0)) : nada) << s;
+    for (unsigned int i = 1; i < Deault.size(); i++)
+      os << "\n" << std::setw(w) << " " << s << std::setw(w) << Deault[i] << s;
+  } else {
+    os << "{required}" << s;
+  }
+  os << Help << "\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 template <typename T>
 class TArg {
-public:
-  TArg(const string& flag, const string& help, const T defaultVal): value_(defaultVal), flag_(flag), help_(help),
-								    default_val_(defaultVal), is_default_(true) { }
-  TArg(const string& flag, const string& help): value_(0), flag_(flag), help_(help), default_val_(0), is_default_(false) { }
+ public:
+  TArg(const string& flag, const string& help, const T defaultVal)
+    : value_(defaultVal), flag_(flag), help_(help), default_val_(defaultVal),
+      is_default_(true) { }
+  TArg(const string& flag, const string& help)
+  : value_(0), flag_(flag), help_(help), default_val_(0), is_default_(false) { }
   virtual ~TArg() { }
   const string& getFlag() const { return flag_; }
   const T& getValue() const { return value_; }
   virtual ostream& printHelp(ostream& os) const {
-   int w = 10;
-   const string s = " : ";
-   os << std::setw(w) << flag_;
-   os << s;
-   os << std::setw(w) << (is_default_ ? to_string<T>(default_val_) : "{required}");
-   os << s << help_ << std::endl;
-   return os << std::setw(w) << flag_ << s << std::setw(w)
-	     << (is_default_ ? to_string<T>(default_val_) : "{required}")
-	     << s << help_ << "\n";
+    int w = 10;
+    const string s = " : ";
+    os << std::setw(w) << flag_;
+    os << s;
+    os << std::setw(w) << (is_default_ ? to_string<T>(default_val_)
+                           : "{required}");
+    os << s << help_ << std::endl;
+    return os << std::setw(w) << flag_ << s << std::setw(w)
+              << (is_default_ ? to_string<T>(default_val_) : "{required}")
+              << s << help_ << "\n";
   }
   virtual bool setValue(const T& newValue) {
     value_ = newValue;
@@ -476,25 +505,27 @@ public:
   }
   void swapValue(TArg& otherArg) { std::swap(value_, otherArg.value_); }
   virtual bool setValue(ArgListType &argv) {
-   // Find an argument that matches the flag, but that hasn't already been found
-   ArgListTypeIt thing1 = find(argv.begin(), argv.end(), ArgType(flag_, false));
-   if (thing1 != argv.end()) {
+    // Find an argument that matches the flag, but not already found
+    ArgListTypeIt thing1 = find(argv.begin(), argv.end(),
+                                ArgType(flag_, false));
+    if (thing1 != argv.end()) {
       // Check out its corresponding value
       ArgListTypeIt thing2 = thing1 + 1;
       // If we're not at the end and not already marked as being found
       if ((thing2 != argv.end()) && (!thing2->second)) {
-         // Mark it and its value as being accounted for
-         thing1->second = true;
-         thing2->second = true;
-         value_ = from_string<T>(thing2->first);
-         return true;
+        // Mark it and its value as being accounted for
+        thing1->second = true;
+        thing2->second = true;
+        value_ = from_string<T>(thing2->first);
+        return true;
       }
-   }
-   if (!is_default_) return false;
-   value_ = default_val_;
-   return true;
+    }
+    if (!is_default_) return false;
+    value_ = default_val_;
+    return true;
   }
-protected:
+
+ protected:
   T value_;
   string flag_;
   string help_;
@@ -504,16 +535,19 @@ protected:
 
 // Template specialization for strings
 template <>
-inline TArg<string>::TArg(const string& flag, const string& help): value_(EMPTYSTR), flag_(flag), help_(help), default_val_(EMPTYSTR), is_default_(false) { }
+inline TArg<string>::TArg(const string& flag, const string& help)
+  : value_(EMPTYSTR), flag_(flag), help_(help), default_val_(EMPTYSTR),
+    is_default_(false) { }
 
 template <typename T>
 ostream& operator<<(ostream &os, const TArg<T> &x) {
-   return (os << x.getFlag() << " " << x.getValue());
+  return (os << x.getFlag() << " " << x.getValue());
 }
 
 class IntArgList: public TArg<vector<int> > {
-public:
-  IntArgList(const string& flag, const string& help): TArg<vector<int> >(flag, help), err_msg_(EMPTYSTR) { }
+ public:
+  IntArgList(const string& flag, const string& help)
+    : TArg<vector<int> >(flag, help), err_msg_(EMPTYSTR) { }
   inline const string& getErr() const { return err_msg_; }
   inline int getValue(const int i) const { return value_.at(i); }
   ostream& printHelp(ostream &os) const {
@@ -525,141 +559,149 @@ public:
     return err_msg_.size() == 0;
   }
   inline unsigned int size() const { return value_.size(); }
-  inline int& operator[] (int index) { return value_.at(index);}
-  inline const int& operator[] (int index) const { return value_.at(index);}
+  inline int& operator[] (int index) { return value_.at(index); }
+  inline const int& operator[] (int index) const { return value_.at(index); }
 
-private:
-   string err_msg_;
+ private:
+  string err_msg_;
 };
 
 inline ostream& operator << (ostream &os, const IntArgList &x) {
-   int numvals = x.size();
-   os << x.getFlag() << " " << numvals << " ";
-   for (int i = 0; i < numvals; i++)
-      os << x.getValue(i) << " ";
-   return os;
+  int numvals = x.size();
+  os << x.getFlag() << " " << numvals << " ";
+  for (int i = 0; i < numvals; i++)
+    os << x.getValue(i) << " ";
+  return os;
 }
 
 class DblArgList: public TArg<vector<double> > {
  public:
-  DblArgList(const string& flag, const string& help): TArg<vector<double> >(flag, help), err_msg_(EMPTYSTR) { }
-  inline const string& getErr() const { return err_msg_; };
-  inline double getValue(const int i) const { return value_.at(i); };
+  DblArgList(const string& flag, const string& help)
+    : TArg<vector<double> >(flag, help), err_msg_(EMPTYSTR) { }
+  inline const string& getErr() const { return err_msg_; }
+  inline double getValue(const int i) const { return value_.at(i); }
   ostream& printHelp(ostream &os) const {
-     printListHelp(os, flag_, help_, is_default_, default_val_);
-     return os;
-  };
+    printListHelp(os, flag_, help_, is_default_, default_val_);
+    return os;
+  }
   bool setValue(ArgListType &argv) {
-     err_msg_ = setListValue(argv, flag_, value_, is_default_, default_val_);
-     return err_msg_.size() == 0;
-  };
-  inline unsigned int size() const { return value_.size(); };
-  inline double &operator[] (int index) { return value_[index]; };
-  inline const double &operator[] (int index) const { return value_[index]; };
+    err_msg_ = setListValue(argv, flag_, value_, is_default_, default_val_);
+    return err_msg_.size() == 0;
+  }
+  inline unsigned int size() const { return value_.size(); }
+  inline double &operator[] (int index) { return value_[index]; }
+  inline const double &operator[] (int index) const { return value_[index]; }
 
  protected:
-   string err_msg_;
+  string err_msg_;
 };
 
 inline ostream& operator << (ostream &os, const DblArgList &x) {
-   int numvals = x.size();
-   os << x.getFlag() << " " << numvals << " ";
-   for (int i = 0; i < numvals; i++)
-      os << x.getValue(i) << " ";
-   return os;
+  int numvals = x.size();
+  os << x.getFlag() << " " << numvals << " ";
+  for (int i = 0; i < numvals; i++)
+    os << x.getValue(i) << " ";
+  return os;
 }
 
 class StrArgList: public TArg<vector<string> > {
  public:
-   StrArgList(const string& flag, const string& help, const bool isOptional = false):
-     TArg<vector<string> >(flag, help), is_optional_(isOptional), err_msg_(EMPTYSTR) { }
-   inline const string& getErr() const { return err_msg_; }
-   inline const string& getValue(const int i) const { return value_.at(i); }
-   ostream& printHelp(ostream &os) const {
-      printListHelp(os, flag_, help_, is_optional_, default_val_);
-      return os;
-   }
-   bool setValue(ArgListType &argv) {
-      err_msg_ = setListValue(argv, flag_, value_, is_optional_, default_val_);
-      return err_msg_.size() == 0;
-   }
-   inline unsigned int size() const {return value_.size();}
-   inline string& operator[] (int index) { return value_.at(index); };
-   inline const string& operator[] (int index) const { return value_.at(index); };
+  StrArgList(const string& flag, const string& help,
+             const bool isOptional = false)
+    : TArg<vector<string> >(flag, help), is_optional_(isOptional),
+      err_msg_(EMPTYSTR) { }
+  inline const string& getErr() const { return err_msg_; }
+  inline const string& getValue(const int i) const { return value_.at(i); }
+  ostream& printHelp(ostream &os) const {
+    printListHelp(os, flag_, help_, is_optional_, default_val_);
+    return os;
+  }
+  bool setValue(ArgListType &argv) {
+    err_msg_ = setListValue(argv, flag_, value_, is_optional_, default_val_);
+    return err_msg_.size() == 0;
+  }
+  inline unsigned int size() const {return value_.size(); }
+  inline string& operator[] (int index) { return value_.at(index); }
+  inline const string& operator[] (int index) const { return value_.at(index); }
 
  private:
-   bool is_optional_;
-   string err_msg_;
+  bool is_optional_;
+  string err_msg_;
 };
 
 inline ostream& operator << (ostream &os, const StrArgList &x) {
-   int numvals = x.size();
-   os << x.getFlag() << " " << numvals << " ";
-   for (int i = 0; i < numvals; i++)
-      os << x.getValue(i) << " ";
-   return os;
+  int numvals = x.size();
+  os << x.getFlag() << " " << numvals << " ";
+  for (int i = 0; i < numvals; i++)
+    os << x.getValue(i) << " ";
+  return os;
 }
 
 class FlagArg: public TArg<bool> {
  public:
-   FlagArg(const string& onFlag, const string& offFlag, const string& help, bool defaultVal):
-     TArg<bool>(onFlag, help, defaultVal), on_flag_(onFlag), off_flag_(offFlag) { }
-   FlagArg(const string& onFlag, const string& offFlag, const string& help):
-     TArg<bool>(onFlag, help), on_flag_(onFlag), off_flag_(offFlag) { }
-   ostream& printHelp(ostream &os) const;
-   bool setValue(bool newValue) { value_ = newValue; return true; }
-   bool setValue(ArgListType &argv);
+  FlagArg(const string& onFlag, const string& offFlag, const string& help,
+          bool defaultVal)
+    : TArg<bool>(onFlag, help, defaultVal), on_flag_(onFlag),
+      off_flag_(offFlag) { }
+  FlagArg(const string& onFlag, const string& offFlag, const string& help)
+    : TArg<bool>(onFlag, help), on_flag_(onFlag), off_flag_(offFlag) { }
+  ostream& printHelp(ostream &os) const;
+  bool setValue(bool newValue) {
+    value_ = newValue;
+    return true;
+  }
+  bool setValue(ArgListType &argv);
 
  protected:
-   string on_flag_;
-   string off_flag_;
+  string on_flag_;
+  string off_flag_;
 };
 
 class CommandLine {
  public:
-   CommandLine(const string funcname): FuncName(funcname), HelpString(EMPTYSTR) {};
-   ~CommandLine() {};
+  explicit CommandLine(const string funcname): FuncName(funcname),
+                                               HelpString(EMPTYSTR) { }
+  ~CommandLine() {}
 
-   void IntSet(int number, ...);
-   void DblSet(int number, ...);
-   void StrSet(int number, ...);
-   void FlagSet(int number, ...);
-   void IntListSet(int number, ...);
-   void DblListSet(int number, ...);
-   void StrListSet(int number, ...);
+  void IntSet(int number, ...);
+  void DblSet(int number, ...);
+  void StrSet(int number, ...);
+  void FlagSet(int number, ...);
+  void IntListSet(int number, ...);
+  void DblListSet(int number, ...);
+  void StrListSet(int number, ...);
 
-   inline void Process(ArgListType &argv, std::ostream & eout) {
-      Process(argv, eout, cerr, false);
-   };
-   inline void Process(ArgListType &argv, std::ostream & eout,
-                       std::ostream & sout) {
-      Process(argv, eout, sout, true);
-   };
+  inline void Process(ArgListType &argv, std::ostream & eout) {
+    Process(argv, eout, cerr, false);
+  }
+  inline void Process(ArgListType &argv, std::ostream & eout,
+                      std::ostream & sout) {
+    Process(argv, eout, sout, true);
+  }
 
-   inline void HelpSet(const string& str) {
-      HelpString = str;
-   };
-   void DisplayHelp(std::ostream & eout) const;
+  inline void HelpSet(const string& str) {
+    HelpString = str;
+  }
+  void DisplayHelp(std::ostream & eout) const;
 
  private:
+  void Process(ArgListType &argv, std::ostream & eout, std::ostream & sout,
+               const bool dolog);
 
-   void Process(ArgListType &argv, std::ostream & eout, std::ostream & sout,
-                const bool dolog);
+  vector<TArg<int> *> IntList;
+  vector<TArg<double> *> DblList;
+  vector<TArg<string> *> StrList;
+  vector<FlagArg *> FlagList;
+  vector<IntArgList *> IntListList;
+  vector<DblArgList *> DblListList;
+  vector<StrArgList *> StrListList;
 
-   vector<TArg<int> *> IntList;
-   vector<TArg<double> *> DblList;
-   vector<TArg<string> *> StrList;
-   vector<FlagArg *> FlagList;
-   vector<IntArgList *> IntListList;
-   vector<DblArgList *> DblListList;
-   vector<StrArgList *> StrListList;
-
-   string FuncName;
-   string HelpString;
+  string FuncName;
+  string HelpString;
 };
 
 inline ostream& operator << (ostream &os, const FlagArg &x) {
-   return (os << x.getFlag());
+  return (os << x.getFlag());
 }
 
 template<typename T>
@@ -668,34 +710,34 @@ void setMatrixRange(int &startT, int &endT, int &startN, int &endN,
                     const TArg<int> &StartNeuron, const TArg<int> &EndNeuron,
                     const vector<vector<T> > cfMtx, const CommandLine &ComL,
                     const string &FunctionName) {
-   startN = StartNeuron.getValue();
-   endN = EndNeuron.getValue();
-   startT = StartTime.getValue();
-   endT = EndTime.getValue();
+  startN = StartNeuron.getValue();
+  endN = EndNeuron.getValue();
+  startT = StartTime.getValue();
+  endT = EndTime.getValue();
 
-   const int lastN = findMaxSize(cfMtx);
-   const int lastT = cfMtx.size();
+  const int lastN = findMaxSize(cfMtx);
+  const int lastT = cfMtx.size();
 
-   if (endN == -1) {         
-      endN = lastN;
-   }
-   if (endT == -1) {
-      endT = lastT;
-   }
-   // startN = endN + 1 implies an empty range - this is allowed
-   if (endN > lastN || startN < 1 || startN > (endN+1)) {
-      CALL_ERROR << "Error in " << FunctionName << ": Neuron range of "
-                 << startN << "..." << endN << " in a sequence with " << lastN
-                 << " neurons is invalid." << ERR_WHERE;
-      ComL.DisplayHelp(Output::Err());
-      exit(EXIT_FAILURE);
-   }
-   if (endT < 1 || endT > lastT || startT < 1 || startT > endT) {
-      CALL_ERROR << "Error in " << FunctionName << ": Time range of "
-                 << startT << "..." << endT << " is invalid." << ERR_WHERE;
-      ComL.DisplayHelp(Output::Err());
-      exit(EXIT_FAILURE);
-   }
+  if (endN == -1) {
+    endN = lastN;
+  }
+  if (endT == -1) {
+    endT = lastT;
+  }
+  // startN = endN + 1 implies an empty range - this is allowed
+  if (endN > lastN || startN < 1 || startN > (endN+1)) {
+    CALL_ERROR << "Error in " << FunctionName << ": Neuron range of "
+               << startN << "..." << endN << " in a sequence with " << lastN
+               << " neurons is invalid." << ERR_WHERE;
+    ComL.DisplayHelp(Output::Err());
+    exit(EXIT_FAILURE);
+  }
+  if (endT < 1 || endT > lastT || startT < 1 || startT > endT) {
+    CALL_ERROR << "Error in " << FunctionName << ": Time range of "
+               << startT << "..." << endT << " is invalid." << ERR_WHERE;
+    ComL.DisplayHelp(Output::Err());
+    exit(EXIT_FAILURE);
+  }
 }
 
 #endif

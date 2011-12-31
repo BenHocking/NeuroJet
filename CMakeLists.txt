@@ -18,7 +18,7 @@ find_package(GTest REQUIRED)
 
 if(DEBUG)
    set(CMAKE_BUILD_TYPE Debug)
-   add_definitions(--coverage)
+   add_definitions(--coverage -fno-inline-small-functions)
    add_definitions(-DCHECK_BOUNDS)
 else()
    set(CMAKE_BUILD_TYPE Release)
