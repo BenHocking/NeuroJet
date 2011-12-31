@@ -24,8 +24,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Noise()
-// Noise(unsigned long int seed, char type = 't')
-// void Reset(unsigned long int seed, char type = 't')
+// Noise(unsigned int seed, char type = 't')
+// void Reset(unsigned int seed, char type = 't')
 //
 // The above function initialize a random number generator with
 // a given seed. Initialization using the default constructor
@@ -93,15 +93,15 @@ class Noise {
   int IsInit;
   int UseMRNG;
   int QNNumber;
-  unsigned long int QNArray[25];
-  unsigned long int mag01[2];
-  long ix1;
-  long ix2;
-  long ix3;
+  unsigned int QNArray[25];
+  unsigned int mag01[2];
+  int ix1;
+  int ix2;
+  int ix3;
   double r[98];
   float gen_time;
 
-  void TRandInit(unsigned long int Seed);
+  void TRandInit(unsigned int Seed);
   double TRandDbl();
   void TRandDblVect(double *vec, int rows);
   void TRandDblMat(double **matrix, int rows, int cols);
@@ -114,10 +114,10 @@ class Noise {
  public:
   inline Noise()
     : IsInit(0), gen_time(0) { }
-  Noise(long unsigned int seed, char type = 't');
+  Noise(unsigned int seed, char type = 't');
   inline ~Noise() { }
 
-  void Reset(unsigned long int seed, char type = 't');
+  void Reset(unsigned int seed, char type = 't');
 
   inline double Uniform(double low, double high);
   void Uniform(double *vec, int rows, double low,

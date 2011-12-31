@@ -24,8 +24,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Noise()
-// Noise(unsigned long int seed, char type = 't
-// void Reset(unsigned long int seed, char type = 't')
+// Noise(unsigned int seed, char type = 't
+// void Reset(unsigned int seed, char type = 't')
 //
 // The above function initialize a random number generator with
 // a given seed. Initialization using the default constructor
@@ -83,11 +83,11 @@
 using namespace std;
 #include <cmath>
 
-Noise::Noise(long unsigned int seed, char type) {
+Noise::Noise(unsigned int seed, char type) {
   Reset(seed, type);
 }
 
-void Noise::Reset(unsigned long int seed, char type) {
+void Noise::Reset(unsigned int seed, char type) {
   if ((type == 't') || (type == 'T')) {
     UseMRNG = false;
     TRandInit(seed);
@@ -274,7 +274,7 @@ void Noise::Bernoulli(bool ** matrix, int rows, int cols,
 
 // Noise RandInit function
 // Initializes the private data members based on the seed
-void Noise::TRandInit(unsigned long int Seed) {
+void Noise::TRandInit(unsigned int Seed) {
    QNNumber = 0;
    QNArray[0] = Seed;
    // QNArray[0] = 0x95f24dabL;
@@ -312,7 +312,7 @@ void Noise::TRandInit(unsigned long int Seed) {
 }
 
 double Noise::TRandDbl() {
-   unsigned long y;
+   unsigned int y;
 
    // generate 25 words at one time
    if (QNNumber == 25) {
@@ -345,7 +345,7 @@ double Noise::TRandDbl() {
 void Noise::TRandDblVect(double *vec, int rows) {
    // get a random number for each index
    for (int i = 0; i < rows; i++) {
-      unsigned long y;
+      unsigned int y;
       // generate 25 words at one time
       if (QNNumber == 25) {
          int kk = 0;
@@ -376,7 +376,7 @@ void Noise::TRandDblVect(double *vec, int rows) {
 void Noise::TRandFltVect(float *vec, int rows) {
    // get a random number for each index
    for (int i = 0; i < rows; i++) {
-      unsigned long y;
+      unsigned int y;
       // generate 25 words at one time
       if (QNNumber == 25) {
          int kk = 0;
@@ -408,7 +408,7 @@ void Noise::TRandFltVect(float *vec, int rows) {
 void Noise::TRandDblMat(double **matrix, int rows, int cols) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-         unsigned long y;
+         unsigned int y;
          // generate 25 words at one time
          if (QNNumber == 25) {
             int kk = 0;
@@ -440,7 +440,7 @@ void Noise::TRandDblMat(double **matrix, int rows, int cols) {
 void Noise::TRandFltMat(float **matrix, int rows, int cols) {
    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
-         unsigned long y;
+         unsigned int y;
          // generate 25 words at one time
          if (QNNumber == 25) {
             int kk = 0;
