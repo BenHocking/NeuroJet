@@ -85,26 +85,26 @@ vector<Population> Population::Member;
 // Begin functions relating to Interneurons //
 //////////////////////////////////////////////
 void Population::initInterneurons() {
-   float act = m_neuronType->getParameter("Activity", SystemVar::GetFloatVar("Activity"));
-   const unsigned int popSize = m_lastNeuron - m_firstNeuron + 1;
-   for_each(m_feedbackInterneurons.begin(), m_feedbackInterneurons.end(), SetInterneuronWeights(popSize, m_firstNeuron));
-   for_each(m_feedforwardInterneurons.begin(), m_feedforwardInterneurons.end(), SetInterneuronWeights(popSize, m_firstNeuron));
-   setDesiredActivity(act);
-   float lambda = m_neuronType->getParameter("lambdaFB", SystemVar::GetFloatVar("lambdaFB"));
-   setFBInternrnSynModRate(lambda);
-   lambda = m_neuronType->getParameter("lambdaFF", SystemVar::GetFloatVar("lambdaFF"));
-   setFFInternrnSynModRate(lambda);
-   float actAvgRate = m_neuronType->getParameter("PyrToInternrnWtAdjDecay", 
-                              SystemVar::GetFloatVar("PyrToInternrnWtAdjDecay"));
-   setActivityAveragingRate(actAvgRate);
-   unsigned int axDelay = m_neuronType->getParameter("FBInternrnAxonalDelay",
-                                               SystemVar::GetIntVar("FBInternrnAxonalDelay"));
-   updateFBInterneuronAxonalDelay(axDelay);
-   axDelay = m_neuronType->getParameter("FFInternrnAxonalDelay",
-                                               SystemVar::GetIntVar("FFInternrnAxonalDelay"));
-   updateFFInterneuronAxonalDelay(axDelay);
-   const float decay = m_neuronType->getParameter("InternrnExcDecay", SystemVar::GetFloatVar("InternrnExcDecay"));
-   updateInterneuronDecay(static_cast<double>(decay));
+  float act = m_neuronType->getParameter("Activity", SystemVar::GetFloatVar("Activity"));
+  const unsigned int popSize = m_lastNeuron - m_firstNeuron + 1;
+  for_each(m_feedbackInterneurons.begin(), m_feedbackInterneurons.end(), SetInterneuronWeights(popSize, m_firstNeuron));
+  for_each(m_feedforwardInterneurons.begin(), m_feedforwardInterneurons.end(), SetInterneuronWeights(popSize, m_firstNeuron));
+  setDesiredActivity(act);
+  float lambda = m_neuronType->getParameter("lambdaFB", SystemVar::GetFloatVar("lambdaFB"));
+  setFBInternrnSynModRate(lambda);
+  lambda = m_neuronType->getParameter("lambdaFF", SystemVar::GetFloatVar("lambdaFF"));
+  setFFInternrnSynModRate(lambda);
+  float actAvgRate = m_neuronType->getParameter("PyrToInternrnWtAdjDecay", 
+                                                SystemVar::GetFloatVar("PyrToInternrnWtAdjDecay"));
+  setActivityAveragingRate(actAvgRate);
+  unsigned int axDelay = m_neuronType->getParameter("FBInternrnAxonalDelay",
+                                                    SystemVar::GetIntVar("FBInternrnAxonalDelay"));
+  updateFBInterneuronAxonalDelay(axDelay);
+  axDelay = m_neuronType->getParameter("FFInternrnAxonalDelay",
+                                       SystemVar::GetIntVar("FFInternrnAxonalDelay"));
+  updateFFInterneuronAxonalDelay(axDelay);
+  const float decay = m_neuronType->getParameter("InternrnExcDecay", SystemVar::GetFloatVar("InternrnExcDecay"));
+  updateInterneuronDecay(static_cast<double>(decay));
 }
 
 float Population::getFeedbackInhibition() const {

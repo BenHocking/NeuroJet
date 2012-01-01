@@ -115,17 +115,17 @@ void SystemVar::exportVars(const string &fileName) {
                << fileName << " for writing" << ERR_WHERE;
     exit(EXIT_FAILURE);
   }
-
+  
   SysMapFloatData::const_iterator Fit;
   for (Fit = FloatVar.begin(); Fit != FloatVar.end(); Fit++) {
     outFile << Fit->first << "\t" << Fit->second.Data << std::endl;
   }
-
+  
   SysMapIntData::const_iterator Iit;
   for (Iit = IntVar.begin(); Iit != IntVar.end(); Iit++) {
     outFile << Iit->first << "\t" << Iit->second.Data << std::endl;
   }
-
+  
   SysMapStrData::const_iterator Sit;
   for (Sit = StrVar.begin(); Sit != StrVar.end(); Sit++) {
     outFile << Sit->first << "\t" << Sit->second.Data << std::endl;
@@ -140,7 +140,7 @@ void SystemVar::exportVars(const string &fileName) {
 }
 
 DataMatrix SystemVar::getAnalysis(const string &SeqName, const string &FunctionName,
-                              const CommandLine &ComL) {
+                                  const CommandLine &ComL) {
   if (!AnalysisList.exists(SeqName)) {
     CALL_ERROR << "Error in " << FunctionName << ": Could not find Analysis "
                << SeqName << ERR_WHERE;
@@ -169,7 +169,7 @@ DataMatrix & SystemVar::getAnalysis(const string &SeqName, StrList &anaDesc,
 }
 
 void SystemVar::getAnalysis(const string &SeqName, DataMatrix &anaList,
-                                   StrList &anaDesc, const string &FunctionName,
+                            StrList &anaDesc, const string &FunctionName,
                             const CommandLine &ComL) {
   if (!AnalysisList.exists(SeqName)) {
     CALL_ERROR << "Error in " << FunctionName << ": " << SeqName
@@ -271,7 +271,7 @@ string SystemVar::GetVarTypeName(const string &name) {
 }
 
 void SystemVar::insertAnalysis(const string &insertName, const DataMatrix &insertData,
-                             const StrList &insertDesc) {
+                               const StrList &insertDesc) {
   AnalysisList.insert(insertName, insertData);
   AnalysisNames.insert(insertName, insertDesc);
 }
