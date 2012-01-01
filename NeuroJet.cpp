@@ -1,26 +1,28 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 3; tab-width: 3 -*- */
-
-///////////////////////////////////////////////////////////
-//
-// NeuroJet
-//
-// Scott Witherell
-// Aaron Shon
-// Paul Rodriguez
-// et alia
-//
-// July 2000
-//
-// merged with RUNIT 3.0 by Dave Sullivan and Joe
-// June 2001
-// Debugged by Dave, Feb 2002
-// completely absorbed RUNIT by Ben Hocking
-// June 2004
-//
-// NMDArise changed by Blake Thomas
-// July 2009
-//
-////////////////////////////////////////////////////////////
+/***************************************************************************
+ * NeuroJet.cpp
+ *
+ *  Really Useful Network Interaction Tool (was RUNIT/PUNIT)
+ *
+ *  Authors: Per Sederberg, Matt Harrison, Scott Witherell, Aaron Shon
+ *           Paul Rodriguez, Dave Sullivan, Ben Hocking, Blake Thomas, et al.
+ *
+ *  Copyright 2011 Informed Simplifications, LLC
+ *  This file is part of NeuroJet.
+ *
+ *  NeuroJet is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NeuroJet is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
+ ****************************************************************************/
+/* -*- Mode: C; indent-tabs-mode: f; c-basic-offset: 2; tab-width: 2 -*- */
 
 //CHIP
 // Two classes of new components: Ones that use variables that already exist(or fewer), and ones that use new

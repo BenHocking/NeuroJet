@@ -1,11 +1,25 @@
-////////////////////////////////////////////////////////////////
-//
-// FILE:        ParallelRand.cpp
-//
-// PURPOSE:     Provides structures and functions to
-//              automate generation of random numbers during MPI sends
-//              and receives.
-//
+/*******************************************************************************
+ * ParallelRand.cpp
+ *
+ *  Provides structures and functions to automate generation of random numbers
+ *  during MPI sends and receives.
+ *
+ *  Copyright 2011 Informed Simplifications, LLC
+ *  This file is part of NeuroJet.
+ *
+ *  NeuroJet is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published
+ *  by the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NeuroJet is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
+ ******************************************************************************/
 // USE:         (1) Create an instance of the class using either the
 //              Bernoulli constructor or the Uniform constructor(the
 //              default parameters can serve as a guideline).
