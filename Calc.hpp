@@ -73,21 +73,21 @@ struct CalcNode {
 
 class Calc {
  public:
-  inline static void initCalc() {
+  static void initCalc() {
     SystemVar::AddCaretFun("Calc", CalcCaret);
     SystemVar::AddCaretFun("GetVar", GetVar);
     SystemVar::AddCaretFun("If", If);
   }
   static double Calculate(const CalcNode * StartNode, CalcNode * &EndNode);
-  inline static void ResetUserNoise(const int seed) {
+  static void ResetUserNoise(const int seed) {
     UserNoise.Reset(seed);
     isNoiseInit = true;
   }
-  inline static string RandomUserSeed() {
+  static string RandomUserSeed() {
     chkNoiseInit();
     return to_string(UserNoise.RandInt(1, 32767));
   }
-  inline static float* convolve(const float* f1, unsigned int s1,
+  static float* convolve(const float* f1, unsigned int s1,
                                 const float* f2, unsigned int s2,
                                 const float dt = 1.0f) {
     float* toReturn = new float[s1 + s2 - 1]();
@@ -98,7 +98,7 @@ class Calc {
     }
     return toReturn;
   }
-  inline static DataList convolve(const DataList &f1, const DataList &f2,
+  static DataList convolve(const DataList &f1, const DataList &f2,
                                   const float dt = 1.0f) {
     const unsigned int f1size = f1.size();
     const unsigned int f2size = f2.size();
@@ -112,23 +112,23 @@ class Calc {
   }
 
  private:
-  inline static void chkNoiseInit() {
+  static void chkNoiseInit() {
     if (!isNoiseInit) ResetUserNoise(SystemVar::GetIntVar("seed"));
   }
   static void getCalcArgs(const CalcNode * StartNode, CalcNode * &EndNode,
                           double &ArgOne, double &ArgTwo);
   static void getCalcArgs(const CalcNode * StartNode, CalcNode * &EndNode,
                           double &ArgOne, double &ArgTwo, double &ArgThree);
-  inline static double getUserNormal(const double mu, const double sigma) {
+  static double getUserNormal(const double mu, const double sigma) {
     chkNoiseInit();
     return UserNoise.Normal(mu, sigma);
   }
-  inline static double getUserRandInt(const unsigned int low,
+  static double getUserRandInt(const unsigned int low,
                                       const unsigned int high) {
     chkNoiseInit();
     return UserNoise.RandInt(low, high);
   }
-  inline static double getUserUniform(const double low, const double high) {
+  static double getUserUniform(const double low, const double high) {
     chkNoiseInit();
     return UserNoise.Uniform(low, high);
   }
