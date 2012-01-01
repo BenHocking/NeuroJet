@@ -41,7 +41,8 @@ const char QuoteSymbol = '\"';
 const char JoinSymbol = ':';
 const char ConditionalSymbol = '?';
 
-const char GrammarSymbolList[] = " {}#@^%$]()\":?";
+const std::string GrammarSymbolList =  // NOLINT(runtime/string)
+  " {}#@^%$]()\":?";
 
 inline int GrammarSymbol(const char &c) {
   return (GrammarSymbolList.find(c) == std::string::npos) ? 0

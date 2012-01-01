@@ -208,7 +208,7 @@ class SystemVar {
     IteratorList[VarName].Data = iter;
   }
   static void SetFloatVar(const std::string& varName, float val);
-  static void SetStrVar(const std::string& varName, std::string val);
+  static void SetStrVar(const std::string& varName, const std::string& val);
 
  private:
   static SysMapIntData IntVar;
