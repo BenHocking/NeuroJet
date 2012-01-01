@@ -276,15 +276,13 @@ string SystemVar::GetVarTypeName(const string &name)
 }
 
 void SystemVar::insertAnalysis(const string &insertName, const DataMatrix &insertData,
-                             const StrList &insertDesc)
-{
+                             const StrList &insertDesc) {
    AnalysisList.insert(insertName, insertData);
    AnalysisNames.insert(insertName, insertDesc);
 }
 
 void SystemVar::insertData(const string &insertName, const DataMatrix &toInsert,
-                         const DataListType insertType)
-{
+                           DataListType insertType) {
    if (insertType == DLT_sequence)
       SequenceList.insert(insertName, MatrixToUISeq(toInsert));
    else if (insertType == DLT_matrix)
@@ -293,13 +291,11 @@ void SystemVar::insertData(const string &insertName, const DataMatrix &toInsert,
       AnalysisList.insert(insertName, toInsert);
 }
 
-void SystemVar::insertSequence(const string &seqName, const UIPtnSequence &toInsert)
-{
+void SystemVar::insertSequence(const string &seqName, const UIPtnSequence &toInsert) {
    SequenceList.insert(seqName, toInsert);
 }
 
-bool SystemVar::IsReadOnly(const string &varName)
-{
+bool SystemVar::IsReadOnly(const string &varName) {
    if (IntVar.find(varName) != IntVar.end()) {
       return IntVar.find(varName)->second.IsReadOnly;
    } else if (FloatVar.find(varName) != FloatVar.end()) {      
@@ -343,25 +339,21 @@ void SystemVar::OutputIntVars()
    }
 }
 
-void SystemVar::OutputStrVars()
-{
+void SystemVar::OutputStrVars() {
    SysMapStrData::const_iterator it;
    for (it = StrVar.begin(); it != StrVar.end(); it++) {
       Output::Err() << " " << it->first << std::endl;
    }
 }
 
-void SystemVar::SetIntVar(string varName, int varValue)
-{
+void SystemVar::SetIntVar(const string& varName, int varValue) {
    IntVar[varName].Data = varValue;
 }
 
-void SystemVar::SetFloatVar(string varName, float varValue)
-{
+void SystemVar::SetFloatVar(const string& varName, float varValue) {
    FloatVar[varName].Data = varValue;
 }
 
-void SystemVar::SetStrVar(string varName, string varValue)
-{
+void SystemVar::SetStrVar(const string& varName, const string& varValue) {
    StrVar[varName].Data = varValue;
 }

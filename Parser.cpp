@@ -223,7 +223,7 @@ void Parser::FillStack(const string& filename) {
    }
    StackNode *CurrentNode;
    CurrentNode = ScriptState::getStackTop();
-   unsigned long CurrentLine = 0;
+   unsigned int CurrentLine = 0;
    while (ScriptFile) {
       string lineIn;
       std::getline(ScriptFile, lineIn);
@@ -323,7 +323,7 @@ StackNode *Parser::GetLoopVal(StackNode * StartNode, string& str) {
 }
 
 void Parser::ParseLine(const string& lineIn, StackNode* &CurrentNode,
-                       unsigned long CurrentLine) {
+                       unsigned int CurrentLine) {
    unsigned int curChar = 0;
    while (curChar < lineIn.size()) {
       char ch = lineIn[curChar++]; // Read curChar and move to next

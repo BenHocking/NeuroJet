@@ -287,7 +287,8 @@ void readDataType(const TArg<std::string> &Type, DataListType &newDataType,
                   std::string& newType, std::string& newSubType,
                   const std::string& FunctionName, const CommandLine &ComL,
                   const bool allowFile = false);
-MatlabCommand ReadMATLABcommand(ifstream& mfile, const std::string& filename);
+MatlabCommand ReadMATLABcommand(std::ifstream& mfile,
+                                const std::string& filename);
 void ReadNJNetworkFile(const std::string& filename);
 void ReadPopulationFile(const std::string& filename, UIMatrix& effDelays);
 inline void RecordSynapticFiring(const int neuron, const std::string &);
