@@ -60,7 +60,7 @@
 #include <vector>
 
 #if defined(TIMING_P2P)
-long trials;
+int trials;
 double total_time;
 #endif
 
@@ -219,8 +219,7 @@ int neurojet_main(int argc, char * argv[]) {
   // **********All nodes stop here!**************
 
 #if defined(TIMING_MODE3)
-  long long start;
-  long long finish;
+  int start, finish;
 
 #   if defined(MULTIPROC)
   ParallelInfo::Barrier();
@@ -243,8 +242,10 @@ int neurojet_main(int argc, char * argv[]) {
 #endif
 
 #if defined(RNG_BUCK_USG)
-  Output::Out() << MSG << "Max RNG bucket contents: " << max_buck_qty << std::endl;
-  Output::Out() << MSG << "Max RNG usage per cycle: " << max_rng_usg << std::endl;
+  Output::Out() << MSG << "Max RNG bucket contents: " << max_buck_qty
+                << std::endl;
+  Output::Out() << MSG << "Max RNG usage per cycle: " << max_rng_usg
+                << std::endl;
   Output::Out() << MSG << "Total RNG's available in bucket: "
                 << ttl_rng_buck_usage << std::endl;
   Output::Out() << MSG << "Total RNG's unavailable in bucket: "
@@ -263,23 +264,24 @@ int neurojet_main(int argc, char * argv[]) {
 #endif
 
 #if defined(TIMING_MODE)
-  long long time1;
-  long long time2,
-    long long time3;
+  int time1, time2, time3;
   time1 = rdtsc();
   time2 = rdtsc();
   usleep(10000);
   time3 = rdtsc();
   Output::Out() << "Number of clock ticks since boot: " << time3 << std::endl;
   Output::Out() << "Time for a clock access: " << (time2 - time1) << " ticks, "
-                << (time2 - time1) * 1000000.0 / TICKS_PER_SEC << " microseconds" << std::endl;
-  Output::Out() << "OS approximation for 10 millisecond sleep: " << (time3 - time2)
-                << " ticks, " << (time3 -
-                                  time2) * 1000.0 / TICKS_PER_SEC << " milliseconds" << std::endl;
+                << (time2 - time1) * 1000000.0 / TICKS_PER_SEC
+                << " microseconds" << std::endl;
+  Output::Out() << "OS approximation for 10 millisecond sleep: "
+                << (time3 - time2) << " ticks, "
+                << (time3 - time2) * 1000.0 / TICKS_PER_SEC
+                << " milliseconds" << std::endl;
   time2 = rdtsc();
   usleep(100000);
   time3 = rdtsc();
-  Output::Out() << "OS approximation for 100 millisecond sleep: " << (time3 - time2)
+  Output::Out() << "OS approximation for 100 millisecond sleep: "
+                << (time3 - time2)
                 << " ticks, " << (time3 - time2) * 1000.0 / TICKS_PER_SEC
                 << " milliseconds" << std::endl;
 #endif
@@ -1335,7 +1337,7 @@ void enqueueDendriticResponse(const DataList& dendriticResponse, const DataList&
   // There are two queues - a "virtual" synaptic queue, and the dendritic
   // queue. The first represents the time course of synaptic activation, and
   // the second represents the RC filter of the dendrite.
-  const unsigned int lastNrn = max(dendriticResponse.size(), dendriteQueue.size());        
+  const unsigned int lastNrn = max(dendriticResponse.size(), dendriteQueue.size());
   for (PopulationCIt it = Population::Member.begin();
        it != Population::Member.end(); ++it) {
     //      #pragma omp parallel for
@@ -1395,8 +1397,7 @@ void FireNonTiedNeurons(const unsigned int numLeft2Fire, const vector<IxSumwz> &
   }
 }
 
-void FireSingleNeuron(const int nrn)
-{
+void FireSingleNeuron(const int nrn) {
 #if defined(CHECK_BOUNDS)
   zi.at(nrn) = true;
   Fired.at(justNow).push_back(nrn);
@@ -1667,7 +1668,7 @@ void GetConnectivity(const string& filename) {
   FanOutCon.assign(ni, UIVector(maxAxonalDelay, 0));
 
   ifstream inFile(filename.c_str());
-  ifstream inFileDelays(filename.c_str()); // So we can compare two lines at once
+  ifstream inFileDelays(filename.c_str());  // So we can compare two lines at once
   if (!inFile) {
     CALL_ERROR << "Could not open file " << filename << " for reading." << ERR_WHERE;
     exit(EXIT_FAILURE);
@@ -1884,8 +1885,7 @@ void GetConnectivity(const string& filename) {
   return;
 }
 
-inline void GetNullTimingData()
-{
+inline void GetNullTimingData() {
 #if defined(RNG_BUCK_TIMING)
   // For comparing against when synFailRate is defined
   rng_start_buck = rdtsc();
@@ -1998,8 +1998,7 @@ map<string, string> ParseStruct(const string& toParse) {
 }
 
 #if defined(SYNFAILS_DEBUG_MODE)
-inline void SynFailsOutput(int TotalAPs, int TotalSuccess)
-{
+inline void SynFailsOutput(int TotalAPs, int TotalSuccess) {
   for (unsigned int relTime = 0; relTime < maxAxonalDelay; ++relTime)
     for (int i = 0; i < Fired[relTime].size(); ++i)
       TotalAPs += FanOutCon[Fired[relTime][i]][relTime];
@@ -2010,8 +2009,7 @@ inline void SynFailsOutput(int TotalAPs, int TotalSuccess)
 }
 #endif
 
-inline void UpdateBucketStats()
-{
+inline void UpdateBucketStats() {
 #if defined(RNG_BUCK_USG)
   if (SystemVar::GetFloatVar("synFailRate") > 0.0f) {
     Output::Out() << MSG << "RNG's available in bucket: "
@@ -2365,11 +2363,11 @@ inline void RecordSynapticFiring(const int iFire, const string & FileName) {
   // Find the proper time
   static float dt = 0.0f;
   if (fabs(dt) < verySmallFloat) {
-    if (fabs(SystemVar::GetFloatVar("deltaT") + 1.0f) > verySmallFloat)
+    if (fabs(SystemVar::GetFloatVar("deltaT") + 1.0f) > verySmallFloat) {
       dt = SystemVar::GetFloatVar("deltaT");
-    else if (fabs(SystemVar::GetFloatVar("alpha") + 1.0f) > verySmallFloat)
-      dt = -100.0f * log(SystemVar::GetFloatVar("alpha")) ;
-    else {
+    } else if (fabs(SystemVar::GetFloatVar("alpha") + 1.0f) > verySmallFloat) {
+      dt = -100.0f * log(SystemVar::GetFloatVar("alpha"));
+    } else {
       CALL_ERROR << "Time interval not set. Please set at least "
         "one of: deltaT, alpha" << endl << ERR_WHERE;
       exit(EXIT_FAILURE);
@@ -2382,23 +2380,22 @@ inline void RecordSynapticFiring(const int iFire, const string & FileName) {
                << FileName << " for writing" << ERR_WHERE;
     exit(EXIT_FAILURE);
   }
-  static int startTime = timeStep ;
+  static int startTime = timeStep;
   // Output::Out()<<"dt = "<<dt<<endl;
   OutFile << (timeStep - startTime) * dt << " ";
 
   DendriticSynapse * dendriticTree = inMatrix[iFire];
-  for (unsigned int c = 0; c < FanInCon[iFire]; c++)
-    {
-      // This attempts to account for failure
-      // If the second firing happens within NMDArise time from previous firing,
-      // and the second firing is a failure, this code will unfortunately
-      // result in counting it as the proper firing.
-      // This behavior is consistent with the behavior of the NeuroJet.
-      DendriticSynapse synapse = dendriticTree[c];
-      if ((synapse.getLastActivate() - timeStep <= static_cast<int>(synapse.getSynapseType()->getNMDArise())) &&
-          (zi[synapse.getSrcNeuron()]))
-        OutFile << synapse.getWeight() << " " << synapse.getSrcNeuron() << " ";
-    }
+  for (unsigned int c = 0; c < FanInCon[iFire]; c++) {
+    // This attempts to account for failure
+    // If the second firing happens within NMDArise time from previous firing,
+    // and the second firing is a failure, this code will unfortunately
+    // result in counting it as the proper firing.
+    // This behavior is consistent with the behavior of the NeuroJet.
+    DendriticSynapse synapse = dendriticTree[c];
+    if ((synapse.getLastActivate() - timeStep <= static_cast<int>(synapse.getSynapseType()->getNMDArise())) &&
+        (zi[synapse.getSrcNeuron()]))
+      OutFile << synapse.getWeight() << " " << synapse.getSrcNeuron() << " ";
+  }
   OutFile << "-1" << endl;
 }
 
@@ -2430,7 +2427,7 @@ void Present(const xInput &curPattern, DataMatrix &IzhVValues, DataMatrix &IzhUV
   }
 
 #if defined(TIMING_P2P)
-  long long elapsed, start;
+  int elapsed, start;
   elapsed = 0;
   start = rdtsc();
 #endif
@@ -2776,8 +2773,7 @@ void ReadPopulationFile(const string& filename, UIMatrix& effDelays) {
 }
 
 template<class T>
-inline void vswap(vector<T> &arr, int index1, int index2)
-{
+inline void vswap(vector<T> &arr, int index1, int index2) {
 #if defined(CHECK_BOUNDS)
   T temp = arr.at(index1);
   arr.at(index1) = arr.at(index2);
@@ -2878,7 +2874,7 @@ void resetDendriticQueues() {
   dendriteQueue_inhdiv.assign(ni, DataList(0));
   dendriteQueue_inhsub.assign(ni, DataList(0));
   for (PopulationCIt it = Population::Member.begin(); it != Population::Member.end(); ++it) {
-    const unsigned int filterSize = it->getNeuronType()->getFilterSize();          
+    const unsigned int filterSize = it->getNeuronType()->getFilterSize();
     for (unsigned int i = it->getFirstNeuron(); i <= it->getLastNeuron(); ++i) {
       dendriteQueue[i].assign(filterSize, 0.0);
       dendriteQueue_inhdiv[i].assign(filterSize, 0.0);
@@ -4346,8 +4342,7 @@ void SaveData (ArgListType& arg) {  // AT_FUN
   ComL.Process(arg, Output::Err());
 
 #if defined(TIMING_MODE)
-  long long start,
-    finish;
+  int start, finish;
 
   Output::Out() << "Entering SaveData" << endl;
 
@@ -5395,8 +5390,7 @@ void Sim(ArgListType& arg) {  // AT_FUN
 
 void Test(ArgListType& arg) {  // AT_FUN
 #if defined(TIMING_MODE)
-  long long start,
-    finish;
+  int start,finish;
 #endif
   // process the function arguments
   static string FunctionName = "Test";
@@ -5754,8 +5748,7 @@ void Test(ArgListType& arg) {  // AT_FUN
 
 void Train(ArgListType& arg) {  // AT_FUN
 #if defined(TIMING_MODE)
-  long long start,
-    finish;
+  int start, finish;
 #endif
 
   // process the function arguments
