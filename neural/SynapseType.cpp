@@ -112,6 +112,7 @@ SynapseType::findPreSynapticTypes(const string& preNeurType) {
     }
     return toReturn;
 }
+
 void SynapseType::saveZbar() {  // OUTPUT ALPHA ARRAY HERE
     fstream myfile;
     myfile.open("ZbarRiseArray.txt", fstream::out);
@@ -133,101 +134,102 @@ void SynapseType::saveZbar() {  // OUTPUT ALPHA ARRAY HERE
 }
 
 void SynapseType::setAlphaDecay() {
-    memset(alphaRiseArray, 0, sizeof(alphaRiseArray[0]) * MAX_RES * (MAX_NMDA));
-    memset(alphaFallArray, 0, sizeof(alphaFallArray[0]) * (MAX_TIME_STEP));
+  memset(alphaRiseArray, 0, sizeof(m_alpha) * MAX_RES * (MAX_NMDA));
+  memset(alphaFallArray, 0, sizeof(m_alpha) * (MAX_TIME_STEP));
 
-    for (unsigned int i = 0; i < 1001; i++) {
-      alphaRiseArray[i][0] = (static_cast<float>(i)) / (1000.0f);
+  for (unsigned int i = 0; i < 1001; i++) {
+    alphaRiseArray[i][0] = (static_cast<float>(i)) / (1000.0f);
 
-      for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
-        // MEGHAN: If using Post Synaptic Rule B set alpha array to ("0" /
-        //  "the old zBar") until peak, then decay normally
-        if (m_learningRule == LRT_PostSynB) {
-          alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0] : 1.0f;
-        } else {
-          alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0]
-            + static_cast<double> (j) / m_NMDArise : 1.0f;
-        }
+    for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
+      // MEGHAN: If using Post Synaptic Rule B set alpha array to ("0" /
+      //  "the old zBar") until peak, then decay normally
+      if (m_learningRule == LRT_PostSynB) {
+	alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0] : 1.0f;
+      } else {
+	alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0]
+	  + static_cast<double> (j) / m_NMDArise : 1.0f;
       }
+    }
+  }
+  for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
+    alphaRiseArray[1000][j] = 1.0f;
+  }
+
+  for (unsigned int i = 0; i < MAX_RES; i++) {
+    for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
+      if (alphaRiseArray[i][j] > 1.0f) {
+	alphaRiseArray[i][j] = 1.0f;
+      }
+    }
+  }
+
+  // USE A FILE TO INPUT zBar during rise
+  if (!m_riseFile.empty()) {
+    fstream file;
+    file.open(m_riseFile.c_str(), fstream::in);
+    if (!file.is_open()) {
+      CALL_ERROR << "Unable to open " << m_riseFile << ".\n" << ERR_WHERE;
+      exit(EXIT_FAILURE);
+    }
+    char ch[20];
+    float rise[MAX_NMDA];
+    unsigned int i = 0;
+    while (i < m_NMDArise + 1 && !file.eof()) {
+      file.getline(ch, 20, ' ');
+      if (ch[0] == '\0') {
+	continue;
+      }
+      char* ch_end;
+      const double val = strtod(ch, &ch_end);
+      rise[i++] = val;
+      if (i > 1 && (rise[i - 1] < rise[i - 2])) {
+	Output::Out() << "\nentry #" << i - 2 << " is: " << rise[i - 2]
+		      << " entry #" << i - 1 << " is: " << rise[i - 1]
+		      << "\nWARNING: zBarRiseArray is non-monotonic!\n"
+		      << "Possible ERROR in " << m_riseFile << "\n\n";
+      }
+    }
+    file.close();
+
+    // THIS IS BAD, USER DID NOT INPUT A CORRECT TXT FILE.
+    if (i != m_NMDArise + 1) {
+      CALL_ERROR << m_riseFile
+		 << " does not agree with NMDArise in script file!\n"
+		 << "Possible mismatch between NMDArise and the length of "
+		 << m_riseFile << ",\nor an error in the format of "
+		 << m_riseFile << endl << ERR_WHERE;
+      exit(EXIT_FAILURE);
+    }
+    if ((rise[0] != 0) || (rise[i - 1] != 1)) {
+      CALL_ERROR << m_riseFile << " is not valid.\n"
+		 << "First number must be 0 and last number must be 1\n"
+		 << "Possible mismatch between NMDArise and the length of "
+		 << m_riseFile << ",\nor an error in the format of "
+		 << m_riseFile << endl << ERR_WHERE;
+      exit(EXIT_FAILURE);
     }
     for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
-        alphaRiseArray[1000][j] = 1.0f;
-    }
-
-    for (unsigned int i = 0; i < MAX_RES; i++) {
-      for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
-        if (alphaRiseArray[i][j] > 1.0f) {
-          alphaRiseArray[i][j] = 1.0f;
-        }
+      alphaRiseArray[0][j] = rise[j];
+      for (unsigned int i = 1; i < MAX_RES; i++) {
+	alphaRiseArray[i][j] = alphaRiseArray[i - 1][j] + 0.001f;
       }
     }
-
-    // USE A FILE TO INPUT zBar during rise
-    if (!m_riseFile.empty()) {
-        fstream file;
-        file.open(m_riseFile.c_str(), fstream::in);
-        if (!file.is_open()) {
-            CALL_ERROR << "Unable to open " << m_riseFile << ".\n" << ERR_WHERE;
-            exit(EXIT_FAILURE);
-        }
-        char ch[20];
-        float rise[MAX_NMDA];
-        unsigned int i = 0;
-        while (i < m_NMDArise + 1 && !file.eof()) {
-            file.getline(ch, 20, ' ');
-            if (ch[0] == '\0')
-                continue;
-            char* ch_end;
-            const double val = strtod(ch, &ch_end);
-            rise[i++] = val;
-            if (i > 1 && (rise[i - 1] < rise[i - 2])) {
-                Output::Out() << "\nentry #" << i - 2 << " is: " << rise[i - 2]
-                              << " entry #" << i - 1 << " is: " << rise[i - 1]
-                              << "\nWARNING: zBarRiseArray is non-monotonic!\n"
-                              << "Possible ERROR in " << m_riseFile << "\n\n";
-            }
-        }
-        file.close();
-
-        // THIS IS BAD, USER DID NOT INPUT A CORRECT TXT FILE.
-        if (i != m_NMDArise + 1) {
-          CALL_ERROR << m_riseFile
-                     << " does not agree with NMDArise in script file!\n"
-                     << "Possible mismatch between NMDArise and the length of "
-                     << m_riseFile << ",\nor an error in the format of "
-                     << m_riseFile << endl << ERR_WHERE;
-          exit(EXIT_FAILURE);
-        }
-        if ((rise[0] != 0) || (rise[i - 1] != 1)) {
-          CALL_ERROR << m_riseFile << " is not valid.\n"
-                     << "First number must be 0 and last number must be 1\n"
-                     << "Possible mismatch between NMDArise and the length of "
-                     << m_riseFile << ",\nor an error in the format of "
-                     << m_riseFile << endl << ERR_WHERE;
-            exit(EXIT_FAILURE);
-        }
-        for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
-            alphaRiseArray[0][j] = rise[j];
-            for (unsigned int i = 1; i < MAX_RES; i++) {
-                alphaRiseArray[i][j] = alphaRiseArray[i - 1][j] + 0.001f;
-            }
-        }
-        for (unsigned int i = 0; i < MAX_RES; i++) {
-          for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
-            if (alphaRiseArray[i][j] > 1.0f) {
-              alphaRiseArray[i][j] = 1.0f;
-            }
-          }
-        }
+    for (unsigned int i = 0; i < MAX_RES; i++) {
+      for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
+	if (alphaRiseArray[i][j] > 1.0f) {
+	  alphaRiseArray[i][j] = 1.0f;
+	}
+      }
     }
+  }
 
-    // BUILD ALPHA FALL ARRAY HERE:
-    m_maxTimeStep = MAX_TIME_STEP;
-    for (unsigned int i = 0; i < (MAX_TIME_STEP); i++) {
-        alphaFallArray[i] = pow(m_alpha, static_cast<double> (i));
-        if (alphaFallArray[i] < 0.001) {
-          // TODO(bhocking): verify this still does what we want
-          m_maxTimeStep = i;
-        }
+  // BUILD ALPHA FALL ARRAY HERE:
+  m_maxTimeStep = MAX_TIME_STEP;
+  for (unsigned int i = 0; i < (MAX_TIME_STEP); i++) {
+    alphaFallArray[i] = pow(m_alpha, static_cast<double> (i));
+    if (alphaFallArray[i] < 0.001) {
+      // TODO(bhocking): verify this still does what we want
+      m_maxTimeStep = i;
     }
+  }
 }
