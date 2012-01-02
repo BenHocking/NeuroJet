@@ -7,7 +7,7 @@
 ifeq ($(TERM),msys)
 	CMAKE_FLAGS = -G "MSYS Makefiles"
 endif
-ROOT_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+ROOT_DIR := $(shell pwd)
 BLD := $(ROOT_DIR)/build
 CACHE := $(BLD)/CMakeCache.txt
 DBLD := $(ROOT_DIR)/debug.build
@@ -15,18 +15,20 @@ MBLD := $(ROOT_DIR)/mpi.build
 DOC := $(ROOT_DIR)/doc
 XBLD := $(ROOT_DIR)/build.xcode
 VSBLD := $(ROOT_DIR)/build.vs
+COV_SRC_DIR := $(DBLD)/CMakeFiles/AllTests.dir/__/src
+COV_TEST_DIR := $(DBLD)/test/CMakeFiles/AllTests.dir/__/src
 
 .PHONY: test clean xcode xcode2 vs
 
 compile:
 	if [ ! -d $(BLD) ]; then mkdir $(BLD); fi
 	(cd $(BLD); cmake $(CMAKE_FLAGS) ..; make)
-	rm -f NeuroJet; ln -s $(BLD)/NeuroJet NeuroJet
+	rm -f NeuroJet; ln -s $(BLD)/src/NeuroJet NeuroJet
 
 debug:
 	if [ ! -d $(DBLD) ]; then mkdir $(DBLD); fi
 	(cd $(DBLD); cmake -DDEBUG=true -DCMAKE_VERBOSE_MAKEFILE=true $(CMAKE_FLAGS) ..; make)
-	rm -f NeuroJet_d; ln -s $(DBLD)/NeuroJet NeuroJet_d
+	rm -f NeuroJet_d; ln -s $(DBLD)/src/NeuroJet NeuroJet_d
 
 mpi:
 	if [ ! -d $(MBLD) ]; then mkdir $(MBLD); fi
@@ -37,11 +39,11 @@ test: debug
 
 coverage: test
 	rm -rf $(DOC)
-	lcov --directory $(DBLD) --zerocounters
-	(cd $(DBLD); ./AllTests;)
-	lcov --directory $(DBLD) --capture --output-file $(DBLD)/app.info
+	lcov --directory $(COV_TEST_DIR) --zerocounters
+	(cd $(DBLD)/test; ./AllTests;)
+	lcov --directory $(COV_TEST_DIR) --capture --output-file $(COV_TEST_DIR)/app.info
 	mkdir $(DOC)
-	(cd $(DOC); genhtml ../debug.build/app.info; open index.html)
+	(cd $(DOC); genhtml $(COV_TEST_DIR)/app.info; open index.html)
 
 clean:
 	if [ -d $(BLD) ]; then rm -rf $(BLD); fi

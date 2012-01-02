@@ -1,20 +1,36 @@
-# Copyright (c) 2010-2011 Informed Simplifications, LLC
-# All rights reserved.
+#  Copyright (c) 2012 Ben hocking
+#  All rights reserved.
 #
-# @since Jan 27, 2010
-# @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
-
+#  @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
+#
+#  This file is part of NeuroJet.
+#
+#  NeuroJet is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published
+#  by the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  NeuroJet is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 if(APPLE)
-   if(EXISTS /usr/bin/clang++)
-     set(CMAKE_CXX_COMPILER "clang++")
-     set(CMAKE_C_COMPILER "clang")
-   endif()
-endif()
+  # The following is necessary for working with XCode 4
+  if(EXISTS /usr/bin/clang++)
+    set(CMAKE_CXX_COMPILER "clang++")
+    set(CMAKE_C_COMPILER "clang")
+  endif()
+endif()    
 
-cmake_minimum_required( VERSION 2.8 )
-project(NeuroJet CXX)
+cmake_minimum_required(VERSION 2.8)
+project(NeuroJet_parent)
 
-find_package(GTest REQUIRED)
+# You must set GTEST_ROOT to the location of a directory containing an include and a lib directory,
+# with the include directory having gtest/gtest.h and the lib directory having libgtest.a (or similar)
+#message("GTEST_ROOT=$ENV{GTEST_ROOT}")
 
 if(DEBUG)
    set(CMAKE_BUILD_TYPE Debug)
@@ -28,6 +44,7 @@ if(MULTIPROC)
    add_definitions(-DMULTIPROC)
 endif()
 
+# Argg! Xcode currently does not work with _GLIBCXX_DEBUG (it compiles, but will easily crash)
 if(APPLE)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "DEBUG")
 else()
@@ -35,23 +52,19 @@ else()
 endif()
 
 if(APPLE)
+#   set(CMAKE_OSX_ARCHITECTURES "x86_64;i386")
    set(CMAKE_OSX_ARCHITECTURES "x86_64")
 endif()    
 
 if(NOT WIN32)
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+   add_definitions(-Wall)
    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -O0 -g")
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 endif()
 
-include_directories(${NeuroJet_SOURCE_DIR} ${GTEST_INCLUDE_DIRS})
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
 
-if(DEBUG)
-   set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
-endif()
-
-set(SRC_DIR ${NeuroJet_SOURCE_DIR})
+set(SRC_DIR ${NeuroJet_parent_SOURCE_DIR}/src)
 set(NEURAL_DIR ${SRC_DIR}/neural)
 set(UTILS_DIR ${SRC_DIR}/utils)
 set(SRC ${SRC_DIR}/ArgFuncts.cpp ${SRC_DIR}/Calc.cpp ${SRC_DIR}/NeuroJet.cpp
@@ -77,19 +90,7 @@ if(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
   	       ${NEURAL_DIR}/Synapse.hpp ${NEURAL_DIR}/SynapseType.hpp ${UTILS_DIR}/StringUtils.hpp)
 endif()
 
-set(FILES ${SRC} ${INCLUDES})
-set(TEST_DIR ${NeuroJet_SOURCE_DIR}/Test)
-
 enable_testing()
 
-# Unit tests
-# * Requires FindGTest.cmake
-# * Requires setting your GTEST_ROOT environment variable unless you're using another mechanism
-
-add_executable(AllTests ${TEST_DIR}/TestHarness.cpp ${FILES} ${TEST_DIR}/NoiseTest.cpp ${TEST_DIR}/StringTest.cpp
-			${TEST_DIR}/ArgFunctsTest.cpp ${TEST_DIR}/StringUtilsTest.cpp)
-target_link_libraries(AllTests ${GTEST_BOTH_LIBRARIES})
-add_test(AllTests AllTests)
-
-# Main executable
-add_executable(NeuroJet ${FILES} ${NeuroJet_SOURCE_DIR}/neurojet_driver.cpp)
+add_subdirectory(src)
+add_subdirectory(test)
