@@ -137,7 +137,7 @@ void SynapseType::setAlphaDecay() {
   memset(alphaRiseArray, 0, sizeof(m_alpha) * MAX_RES * (MAX_NMDA));
   memset(alphaFallArray, 0, sizeof(m_alpha) * (MAX_TIME_STEP));
 
-  for (unsigned int i = 0; i < 1001; i++) {
+  for (unsigned int i = 0; i < MAX_RES; i++) {
     alphaRiseArray[i][0] = (static_cast<float>(i)) / (1000.0f);
 
     for (unsigned int j = 0; j < m_NMDArise + 1; j++) {

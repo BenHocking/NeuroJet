@@ -27,6 +27,12 @@
 #    include "Filter.hpp"
 #  endif
 
+#  if !defined(STRINGUTILS_HPP)
+#    include "utils/StringUtils.hpp"
+#  endif
+
+using neurojet::stringutils::EMPTYSTR;
+
 enum LearningRuleType {
   LRT_Undef,
   LRT_PostSyn,
@@ -39,7 +45,8 @@ class SynapseType {
  public:
   explicit SynapseType(const std::string& prePostNeurType = "default")
     : m_learningRule(LRT_PostSyn), m_mu(0.0f), m_NMDArise(1), m_alpha(0.0f),
-      m_Ksyn(1.0f), m_synSuccRate(1.0f), m_preNeurType(prePostNeurType),
+      m_Ksyn(1.0f), m_synSuccRate(1.0f), m_riseFile(EMPTYSTR),
+      m_preNeurType(prePostNeurType),
       m_postNeurType(prePostNeurType), m_maxTimeStep(0) {}
   SynapseType(const SynapseType& s);
   SynapseType(const LearningRuleType learningRule, const float mu,

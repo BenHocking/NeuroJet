@@ -32,6 +32,8 @@ enable_testing()
 # * Requires setting your GTEST_ROOT environment variable unless you're using another mechanism
 
 add_executable(AllTests ${TEST_DIR}/TestHarness.cpp ${FILES} ${TEST_DIR}/NoiseTest.cpp ${TEST_DIR}/StringTest.cpp
-			${TEST_DIR}/ArgFunctsTest.cpp ${TEST_DIR}/utils/StringUtilsTest.cpp)
+			${TEST_DIR}/ArgFunctsTest.cpp
+			${TEST_DIR}/neural/SynapseTypeTest.cpp
+			${TEST_DIR}/utils/StringUtilsTest.cpp)
 target_link_libraries(AllTests ${GTEST_BOTH_LIBRARIES})
 add_test(AllTests AllTests)
