@@ -22,11 +22,14 @@
 #include "gtest/gtest.h"
 
 #include <cstdio>
+#include <map>
+#include <stdexcept>
 #include <string>
 
-using std::string;
-using std::fopen;
 using std::fclose;
+using std::fopen;
+using std::map;
+using std::string;
 
 namespace {
   const char RISE_FILE[] = "ZbarRiseArray.txt";
@@ -193,5 +196,27 @@ namespace {
     EXPECT_TRUE(fileExists(FALL_FILE));
     deleteIfExists(RISE_FILE);
     deleteIfExists(FALL_FILE);
+  }
+
+  TEST_F(SynapseTypeTest, AddMemberAddsSynapseType) {
+    SynapseType::addMember("type_a", LRT_MvgAvg, 0.01f, 2, 0.03f,
+                           0.04f, 0.05f, "pre_a", "post");
+    SynapseType::addMember("type_b", LRT_MvgAvg, 0.01f, 2, 0.03f,
+                           0.04f, 0.05f, "post", "pre_b");
+    map<string, SynapseType const*> a_map = SynapseType::findPreSynapticTypes("post");
+    EXPECT_EQ(1, a_map.size());
+    EXPECT_EQ(NULL, a_map["type_b"]);
+    EXPECT_EQ(NULL, a_map["type_a"]);
+    EXPECT_EQ(NULL, a_map["post"]);
+    EXPECT_STREQ("pre_a", a_map["pre_a"]->getPreNeurType().c_str());
+    EXPECT_STREQ("post", a_map["pre_a"]->getPostNeurType().c_str());
+    try {
+      SynapseType::addMember("type_a", LRT_MvgAvg, 0.01f, 2, 0.03f,
+                             0.04f, 0.05f, "pre_a", "post");
+      FAIL() << "Should not be able to add the same member twice";
+    }
+    catch (std::runtime_error e) {
+      EXPECT_STREQ("SynapseType 'type_a' already exists", e.what());
+    }
   }
 }

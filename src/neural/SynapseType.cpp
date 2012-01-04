@@ -22,6 +22,7 @@
 #endif
 
 #include <map>
+#include <stdexcept>
 #include <string>
 
 #if !defined(OUTPUT_HPP)
@@ -96,8 +97,7 @@ void SynapseType::addMember(const string& name,
     Member[name] = SynapseType(learningRule, mu, NMDArise, alpha, Ksyn,
                                synFailRate, preType, postType);
   } else {
-    CALL_ERROR << "SynapseType " << name << " already exists" << ERR_WHERE;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("SynapseType '" + name + "' already exists");
   }
 }
 
