@@ -40,32 +40,33 @@ enum ThresholdType { TT_Undef, TT_Simple, TT_E, TT_Log, TT_Rational };
 
 class NeuronType {
  public:
-  explicit NeuronType(const std::string& name = "default")
+  static const char* DEFAULT;
+  explicit NeuronType(const std::string& name = DEFAULT) throw()
     : m_synapseType(name), m_isExc(true), m_isInhDiv(false),
       m_thresholdType(TT_Simple), m_name(name) {}
-  NeuronType(const NeuronType& n);
+  NeuronType(const NeuronType& n) throw();
   NeuronType(bool isExc, bool isInhDiv, const ThresholdType thresholdType,
-             const std::string& name)
+             const std::string& name) throw()
     : m_synapseType(name), m_isExc(isExc), m_isInhDiv(isInhDiv),
       m_thresholdType(thresholdType), m_name(name) {}
-  NeuronType& operator=(const NeuronType& n);
+  NeuronType& operator=(const NeuronType& n) throw();
   void convolveFilters();
   bool forceExt() const;
-  unsigned int getFilterSize() const { return m_convolvedFilter.size(); }
-  Filter getFilter() const { return m_convolvedFilter; }
-  std::string getName() const { return m_name; }
+  unsigned int getFilterSize() const throw() { return m_convolvedFilter.size(); }
+  Filter getFilter() const throw() { return m_convolvedFilter; }
+  std::string getName() const throw() { return m_name; }
   template<class T>
   T getParameter(const std::string& param, const T defValue) const {
     // m_parameter[param] isn't const friendly, hence this:
     return (hasParameter(param)) ?
       from_string<T>(m_parameter.find(param)->second) : defValue;
   }
-  ThresholdType getThresholdType() const { return m_thresholdType; }
-  bool hasParameter(const std::string& param) const {
+  ThresholdType getThresholdType() const throw() { return m_thresholdType; }
+  bool hasParameter(const std::string& param) const throw() {
     return (m_parameter.find(param) != m_parameter.end());
   }
-  bool isExcType() const { return m_isExc; }
-  bool isInhDivType() const { return m_isInhDiv; }
+  bool isExcType() const throw() { return m_isExc; }
+  bool isInhDivType() const throw() { return m_isInhDiv; }
   void loadDTSFilterValues(const DataList &filterVals) {
     m_dendriteToSomaFilter.setFilter(filterVals);
     convolveFilters();

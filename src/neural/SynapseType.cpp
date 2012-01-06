@@ -177,16 +177,16 @@ void SynapseType::setAlphaDecay() {
     while (i < m_NMDArise + 1 && !file.eof()) {
       file.getline(ch, 20, ' ');
       if (ch[0] == '\0') {
-	continue;
+        continue;
       }
       char* ch_end;
       const double val = strtod(ch, &ch_end);
       rise[i++] = val;
       if (i > 1 && (rise[i - 1] < rise[i - 2])) {
-	Output::Out() << "\nentry #" << i - 2 << " is: " << rise[i - 2]
-		      << " entry #" << i - 1 << " is: " << rise[i - 1]
-		      << "\nWARNING: zBarRiseArray is non-monotonic!\n"
-		      << "Possible ERROR in " << m_riseFile << "\n\n";
+        Output::Out() << "\nentry #" << i - 2 << " is: " << rise[i - 2]
+                      << " entry #" << i - 1 << " is: " << rise[i - 1]
+                      << "\nWARNING: zBarRiseArray is non-monotonic!\n"
+            		      << "Possible ERROR in " << m_riseFile << "\n\n";
       }
     }
     file.close();

@@ -56,7 +56,7 @@ clean:
 xcode:
 	rm -rf $(XBLD)
 	mkdir $(XBLD)
-	(cd $(XBLD); cmake -G"Xcode" ..; open NeuroJet.xcodeproj)
+	(cd $(XBLD); cmake -G"Xcode" ..; open NeuroJet_parent.xcodeproj)
 
 xcode2: compile
 	if [ -e $(CACHE) ]; then rm $(CACHE); fi

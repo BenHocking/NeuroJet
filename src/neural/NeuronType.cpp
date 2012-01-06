@@ -34,16 +34,18 @@
 #  include "SystemVar.hpp"
 #endif
 
+const char* NeuronType::DEFAULT = "default";
+
 std::map<std::string, NeuronType> NeuronType::Member;
 
-NeuronType::NeuronType(const NeuronType& n)
+NeuronType::NeuronType(const NeuronType& n) throw()
   : m_dendriteToSomaFilter(n.m_dendriteToSomaFilter),
     m_convolvedFilter(n.m_convolvedFilter), m_synapseType(n.m_synapseType),
     m_parameter(n.m_parameter), m_isExc(n.m_isExc), m_isInhDiv(n.m_isInhDiv),
     m_thresholdType(n.m_thresholdType), m_name(n.m_name) {
 }
 
-NeuronType& NeuronType::operator=(const NeuronType& n) {
+NeuronType& NeuronType::operator=(const NeuronType& n) throw() {
   if (this != &n) {  // make sure not same object
     m_dendriteToSomaFilter = n.m_dendriteToSomaFilter;
     m_convolvedFilter = n.m_convolvedFilter;
@@ -62,8 +64,7 @@ void NeuronType::addMember(const std::string& name, bool isExc, bool isInhDiv,
   if (Member.find(name) == Member.end()) {
     Member[name] = NeuronType(isExc, isInhDiv, thresholdType, name);
   } else {
-    CALL_ERROR << "NeuronType " << name << " already exists" << ERR_WHERE;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("NeuronType '" + name + "' already exists");
   }
 }
 
