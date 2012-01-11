@@ -80,12 +80,18 @@ class Interneuron {
   inline void setDecayRate(const float newDecay) {
     m_excitationDecay = newDecay;
   }
+  inline float getDecayRate() const throw() {
+    return m_excitationDecay;
+  }
   inline void setDesiredActivity(const double desiredActivity) {
     m_desiredActivity = desiredActivity;
   }
   inline void setMult(const double mult) { m_mult = mult; }
   // change the axonal buffer size
   void setMaxTimeOffset(const unsigned int buffSize);
+  inline unsigned int getMaxTimeOffset() const throw() {
+    return m_axonalBuffSize;
+  }
   inline void setNumWeights(const unsigned int numWeights,
                             const unsigned int firstN) {
     m_PyrToInternrnWt.assign(numWeights, 1.0L);

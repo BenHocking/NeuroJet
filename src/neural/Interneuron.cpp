@@ -43,9 +43,8 @@ Interneuron::Interneuron(const float excitationDecay,
     m_useWeightsForActivity(false), m_WeightedActAvgAdj(1.0f),
     m_activityDeviation(0.0f), m_SynModRate(0.0f), m_actAvgRate(0.0f),
     m_mult(1.0f) {
-  if (m_axonalBuffSize == 0) {
+  if (m_axonalBuffSize == 0)
     throw length_error("Attempted to create an Interneuron with no buffer");
-  }
 }
 
 Interneuron::Interneuron(const Interneuron& i)
@@ -125,9 +124,8 @@ void Interneuron::copy(const Interneuron& i) {
 }
 
 void Interneuron::setMaxTimeOffset(const unsigned int buffSize) {
-  if (buffSize == 0) {
+  if (buffSize == 0)
     throw length_error("Attempted to alter Interneuron to have no buffer");
-  }
   m_axonalBuffSize = buffSize;
   while (m_axonalBuffer.size() < m_axonalBuffSize) {
     m_axonalBuffer.push_front(0.0f);
@@ -152,16 +150,17 @@ void Interneuron::updateInternrnWeights(const UIVector &JustFired,
     //  current activity, as well as other modifications
     double actualAct = 0.0f;
     for (unsigned int i = 0; i < JustFired.size(); ++i) {
-      unsigned int iFired = JustFired[i];
+      const unsigned int iFired = JustFired[i];
+      const int idx = iFired - m_firstNeuron;
       if ((iFired >= firstN) && (iFired <= lastN)) {
-        actualAct += (m_useWeightsForActivity ? m_PyrToInternrnWt[iFired]
-                      : 1.0L);
+        actualAct += (m_useWeightsForActivity ? m_PyrToInternrnWt[idx] : 1.0L);
       }
     }
     if (m_useWeightsForActivity) {
       double totalWeights = 0.0f;
       for (unsigned int nrn = firstN; nrn <= lastN; ++nrn) {
-        totalWeights += m_PyrToInternrnWt[nrn];
+        const int idx = nrn - m_firstNeuron;
+        totalWeights += m_PyrToInternrnWt[idx];
       }
       actualAct /= totalWeights;
     } else {
@@ -173,10 +172,11 @@ void Interneuron::updateInternrnWeights(const UIVector &JustFired,
       * (actualAct * m_WeightedActAvgAdj - m_desiredActivity);
 
     for (unsigned int i = 0; i < toModify.size(); i++) {
-      unsigned int iFired = toModify[i];
-      m_PyrToInternrnWt[iFired] += m_SynModRate * m_activityDeviation;
-      if (m_PyrToInternrnWt[iFired] < 0)
-        m_PyrToInternrnWt[iFired] = 0;
+      const int idx = toModify[i] - m_firstNeuron;
+      m_PyrToInternrnWt[idx] += m_SynModRate * m_activityDeviation;
+      if (m_PyrToInternrnWt[idx] < 0) {
+        m_PyrToInternrnWt[idx] = 0;
+      }
     }
   }
 }

@@ -34,35 +34,14 @@ using std::map;
 using std::string;
 
 namespace {
-  const char RISE_FILE[] = "ZbarRiseArray.txt";
-  const char FALL_FILE[] = "ZbarFallArray.txt";
-
   class NeuronTypeTest : public ::testing::Test {
    protected:
     virtual void SetUp() {
       n_type_constructed_ = NeuronType(false, true, TT_E, "constructed");
     }
 
-    static bool fileExists(const char* filename);
-    static void deleteIfExists(const char* filename);
     NeuronType n_type_constructed_;
   };
-
-  bool NeuronTypeTest::fileExists(const char* filename) {
-    FILE* check_file = fopen(filename, "r");
-    bool retval = false;
-    if (check_file != NULL) {
-      fclose(check_file);
-      retval = true;
-    }
-    return retval;
-  }
-
-  void NeuronTypeTest::deleteIfExists(const char* filename) {
-    if (fileExists(filename)) {
-      remove(filename);
-    }
-  }
 
   TEST_F(NeuronTypeTest, DefaultConstructorHasCorrectValues) {
     const NeuronType n_type;
