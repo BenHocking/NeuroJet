@@ -89,7 +89,6 @@ Noise::Noise(unsigned int seed, char type) {
 
 void Noise::Reset(unsigned int seed, char type) {
   if ((type == 't') || (type == 'T')) {
-    UseMRNG = false;
     TRandInit(seed);
     // We used to also have another option from Numerical Recipes in C, but
     // removed it in order to make the code open source.
@@ -97,7 +96,7 @@ void Noise::Reset(unsigned int seed, char type) {
     cerr << "Noise type " << type << "unknown. Must be 't'." << endl;
     exit(EXIT_FAILURE);
   }
-  IsInit = 1;
+  IsInit = true;
 }
 
 void Noise::Uniform(double *vec, int rows, double low,

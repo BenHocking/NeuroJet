@@ -25,7 +25,7 @@
 //
 // Noise()
 // Noise(unsigned int seed, char type = 't')
-// void Reset(unsigned int seed, char type = 't')
+// void Reset(unsigned int64 seed, char type = 't')
 //
 // The above function initialize a random number generator with
 // a given seed. Initialization using the default constructor
@@ -90,14 +90,10 @@
 
 class Noise {
  private:
-  int IsInit;
-  int UseMRNG;
+  bool IsInit;
   int QNNumber;
-  unsigned int QNArray[25];
-  unsigned int mag01[2];
-  int ix1;
-  int ix2;
-  int ix3;
+  int64_t QNArray[25];
+  int64_t mag01[2];
   double r[98];
   float gen_time;
 
@@ -113,7 +109,7 @@ class Noise {
 
  public:
   inline Noise()
-    : IsInit(0), gen_time(0) { }
+    : IsInit(false), gen_time(0) { }
   Noise(unsigned int seed, char type = 't');
   inline ~Noise() { }
 
@@ -154,7 +150,7 @@ class Noise {
   void Bernoulli(int **matrix, int rows, int cols, double rate);
   void Bernoulli(bool * vec, int rows, double rate);
   void Bernoulli(bool ** matrix, int rows, int cols, double rate);
-  inline int Initialized() const { return IsInit; }
+  inline bool Initialized() const { return IsInit; }
 };
 
 inline double Noise::Uniform(double low, double high) {
