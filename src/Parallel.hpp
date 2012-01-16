@@ -49,9 +49,6 @@
 #    if !defined(PARALLELRAND_HPP)
 #      include "ParallelRand.hpp"
 #    endif
-#    if !defined(SYNAPSE_HPP)
-#      include "neural/Synapse.hpp"
-#    endif
 
 using std::string;
 using std::vector;

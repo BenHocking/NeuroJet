@@ -50,8 +50,11 @@
 #if !defined(NEURONTYPE_HPP)
 #  include "neural/NeuronType.hpp"
 #endif
-#if !defined(SYNAPSE_HPP)
-#   include "neural/Synapse.hpp"
+#if !defined(AXONALSYNAPSE_HPP)
+#   include "neural/AxonalSynapse.hpp"
+#endif
+#if !defined(DENDRITICSYNAPSE_HPP)
+#   include "neural/DendriticSynapse.hpp"
 #endif
 
 using std::string;

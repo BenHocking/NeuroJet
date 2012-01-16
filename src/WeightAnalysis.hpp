@@ -29,6 +29,9 @@
 #  if !defined(SYSTEMVAR_HPP)
 #    include "SystemVar.hpp"
 #  endif
+#  if !defined(DENDRITICSYNAPSE_HPP)
+#    include "neural/DendriticSynapse.hpp"
+#  endif
 
 void getContextStats(const Pattern &FireVect, const int TotalTimeSteps,
                      int tolerance, const int isLoop, bool &multifire,

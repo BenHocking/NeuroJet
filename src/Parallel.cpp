@@ -25,6 +25,13 @@
 #   include "Parallel.hpp"
 #endif
 
+#if !defined(AXONALSYNAPSE_HPP)
+#   include "neural/AxonalSynapse.hpp"
+#endif
+#if !defined(DENDRITICSYNAPSE_HPP)
+#   include "neural/DendriticSynapse.hpp"
+#endif
+
 #if defined(MULTIPROC)
 unsigned int ParallelInfo::totalNumNrns;
 // Total number of nodes (including root)

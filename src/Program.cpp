@@ -35,8 +35,8 @@
 #  if !defined(NEURONTYPE_HPP)
 #    include "neural/NeuronType.hpp"
 #  endif
-#  if !defined(SYNAPSE_HPP)
-#    include "neural/Synapse.hpp"
+#  if !defined(DENDRITICSYNAPSE_HPP)
+#     include "neural/DendriticSynapse.hpp"
 #  endif
 #  include <iostream>
 #  include <fstream>

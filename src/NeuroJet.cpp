@@ -89,6 +89,12 @@ double total_time;
 // #if !defined(STATE_HPP)
 // #  include "State.hpp"
 // #endif
+#if !defined(AXONALSYNAPSE_HPP)
+#   include "neural/AxonalSynapse.hpp"
+#endif
+#if !defined(DENDRITICSYNAPSE_HPP)
+#   include "neural/DendriticSynapse.hpp"
+#endif
 #if !defined(STRINGUTILS_HPP)
 #  include "utils/StringUtils.hpp"
 #endif

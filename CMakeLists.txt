@@ -71,7 +71,7 @@ set(SRC ${SRC_DIR}/ArgFuncts.cpp ${SRC_DIR}/Calc.cpp ${SRC_DIR}/NeuroJet.cpp
 	${SRC_DIR}/Noise.cpp ${SRC_DIR}/Output.cpp ${SRC_DIR}/Parser.cpp ${SRC_DIR}/Population.cpp
 	${SRC_DIR}/Program.cpp ${SRC_DIR}/SystemVar.cpp ${SRC_DIR}/rdtsc.s
 	${NEURAL_DIR}/Interneuron.cpp ${NEURAL_DIR}/NeuronType.cpp
-	${NEURAL_DIR}/Synapse.cpp ${NEURAL_DIR}/SynapseType.cpp ${UTILS_DIR}/StringUtils.cpp)
+	${NEURAL_DIR}/DendriticSynapse.cpp ${NEURAL_DIR}/SynapseType.cpp ${UTILS_DIR}/StringUtils.cpp)
 if(MULTIPROC OR MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
   set(SRC ${SRC} ${SRC_DIR}/Parallel.cpp ${SRC_DIR}/ParallelRand.cpp)
 endif()
@@ -87,7 +87,8 @@ if(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
   	       ${SRC_DIR}/Parser.hpp ${SRC_DIR}/Population.hpp ${SRC_DIR}/Program.hpp ${SRC_DIR}/SimState.hpp
   	       ${SRC_DIR}/State.hpp ${SRC_DIR}/Symbols.hpp ${SRC_DIR}/SystemVar.hpp ${SRC_DIR}/User.hpp
   	       ${SRC_DIR}/WeightAnalysis.hpp ${NEURAL_DIR}/Interneuron.hpp ${NEURAL_DIR}/NeuronType.hpp
-  	       ${NEURAL_DIR}/Synapse.hpp ${NEURAL_DIR}/SynapseType.hpp ${UTILS_DIR}/StringUtils.hpp)
+  	       ${NEURAL_DIR}/AxonalSynapse.hpp ${NEURAL_DIR}/DendriticSynapse.hpp ${NEURAL_DIR}/SynapseType.hpp
+	       ${UTILS_DIR}/StringUtils.hpp)
 endif()
 
 enable_testing()

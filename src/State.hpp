@@ -28,8 +28,8 @@
 #  if !defined(POPULATION_HPP)
 #    include "Population.hpp"
 #  endif
-#  if !defined(SYNAPSE_HPP)
-#    include "neural/Synapse.hpp"
+#  if !defined(DENDRITICSYNAPSE_HPP)
+#    include "neural/DendriticSynapse.hpp"
 #  endif
 
 class State {
