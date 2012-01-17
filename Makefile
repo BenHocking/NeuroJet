@@ -42,6 +42,8 @@ coverage: test
 	lcov --directory $(COV_TEST_DIR) --zerocounters
 	(cd $(DBLD)/test; ./AllTests;)
 	lcov --directory $(COV_TEST_DIR) --capture --output-file $(COV_TEST_DIR)/app.info
+	# remove output for external libraries
+	lcov --remove $(COV_TEST_DIR)/app.info "/usr*" --output-file $(COV_TEST_DIR)/app.info
 	mkdir $(DOC)
 	(cd $(DOC); genhtml $(COV_TEST_DIR)/app.info; open index.html)
 

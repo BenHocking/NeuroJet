@@ -1,7 +1,7 @@
 /***************************************************************************
  * NeuronTypeTest.cpp
  *
- *  Copyright 2011 Ben Hocking
+ *  Copyright 2012 Ben Hocking
  *  This file is part of the NeuroJet tester AllTests.
  *
  *  NeuroJet is free software: you can redistribute it and/or modify

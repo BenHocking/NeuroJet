@@ -1,5 +1,5 @@
 /***************************************************************************
- * Synapse.hpp
+ * DendriticSynapse.hpp
  *
  *  Copyright 2005, 2009, 2011 Informed Simplifications, LLC
  *  This file is part of NeuroJet.
@@ -45,34 +45,9 @@ class DendriticSynapse {
     m_weight(0.0f), m_riseUntil(0), m_lastActivate(NEVER_ACTIVATED),
     m_prevLastActivate(NEVER_ACTIVATED), m_mvgAvg(0.0f), m_synType(NULL) {
   };
-  DendriticSynapse(const DendriticSynapse& d) {
-     m_isExc = d.m_isExc;
-     m_isInhDiv = d.m_isInhDiv;
-     m_srcNeuron = d.m_srcNeuron;
-     m_destNeuron = d.m_destNeuron;
-     m_weight = d.m_weight;
-     m_lastActivate = d.m_lastActivate;
-     m_prevLastActivate = d.m_prevLastActivate;
-     m_mvgAvg = d.m_mvgAvg;
-     m_synType = d.m_synType;
-  }
   ~DendriticSynapse() {
      // Don't do anything
      // ESPECIALLY don't destroy m_synType!!
-  }
-  DendriticSynapse& operator=(const DendriticSynapse& d) {
-     if (this != &d) {
-        m_isExc = d.m_isExc;
-        m_isInhDiv = d.m_isInhDiv;
-        m_srcNeuron = d.m_srcNeuron;
-        m_destNeuron = d.m_destNeuron;
-        m_weight = d.m_weight;
-        m_lastActivate = d.m_lastActivate;
-        m_prevLastActivate = d.m_prevLastActivate;
-        m_mvgAvg = d.m_mvgAvg;
-        m_synType = d.m_synType;
-     }
-     return *this;
   }
   // activate happens prior to ++timeStep
   virtual void activate(DataList &bus, DataList &bus_inhdiv,
@@ -88,9 +63,9 @@ class DendriticSynapse {
   inline void setSrcNeuron(const unsigned int toSet) { m_srcNeuron = toSet; }
   inline float getWeight() const { return m_weight; }
   inline void setWeight(const float toSet) { m_weight = toSet; }
-  inline float calcZBar(int timeStep, int lastActivate, int NMDArise,
-                        LearningRuleType learningRule) {
+  inline float calcZBar(int timeStep, int lastActivate) {
     const int timeDiff = timeStep - lastActivate;
+    const int NMDArise = m_synType->getNMDArise();
     const int fallDiff = timeDiff - NMDArise;
     float zBar = 0;
     if (timeStep <= static_cast<int> (m_riseUntil)) {
@@ -103,9 +78,7 @@ class DendriticSynapse {
       }
     } else if (timeDiff < NMDArise) {
       zBar = m_synType->alphaRiseArray[m_oldZbar][timeDiff];
-      const float rise =
-        m_synType->alphaRiseArray[m_oldZbar][timeStep - lastActivate];
-      if ((learningRule == LRT_PostSynB) && !(rise > 0)) {
+      if ((m_synType->getLearningRule() == LRT_PostSynB) && !(zBar > 0)) {
         zBar =
           m_synType->alphaRiseArray[m_oldZbar][timeStep - m_prevLastActivate];
       }
@@ -125,26 +98,27 @@ class DendriticSynapse {
     const int fallDiff = timeDiff - NMDArise;
     const unsigned int maxTimeStep = m_synType->getMaxTimeStep();
     // Never_Activated or really old
-    if (fallDiff >= static_cast<int>(maxTimeStep)) {
+    if (m_lastActivate == NEVER_ACTIVATED ||
+        fallDiff >= static_cast<int>(maxTimeStep)) {
       m_weight -= synModRate * m_weight;
     } else {
       LearningRuleType learningRule = m_synType->getLearningRule();
       if (learningRule == LRT_MultiActPS) {
         for (unsigned int i = 0; i < m_actHistory.size(); i++) {
           const float zBar =
-            calcZBar(timeStep, m_actHistory[i], NMDArise, learningRule);
+            calcZBar(timeStep, m_actHistory[i]);
           m_weight += static_cast<float>(synModRate * (zBar - m_weight));
         }
       } else {
         const float zBar =
-          calcZBar(timeStep, m_lastActivate, NMDArise, learningRule);
+          calcZBar(timeStep, m_lastActivate);
         if (learningRule == LRT_MvgAvg) {
           // For moving averager, it only gets updated when synapse is
           //  activated. Need to do calculations since that's happened (all
           //  zeros)
           m_weight +=
             static_cast<float>(synModRate * (zBar * m_mvgAvg - m_weight));
-        } else if (learningRule == LRT_PostSyn) {
+        } else {
           m_weight += static_cast<float>(synModRate * (zBar - m_weight));
         }
       }
@@ -165,14 +139,19 @@ class DendriticSynapse {
   }
   static Noise SynNoise;                 // rng for syn failure
 
- private:
   // Static variables
   /**
    * NEVER_ACTIVATED is set so that if m_lastActivate == NEVER_ACTIVATED,
    * then timeStep - m_lastActivate >= MAX_TIME_STEP (because timeStep >= 0)
    */
-  static const int NEVER_ACTIVATED =
-    -1 - static_cast<int>(SynapseType::MAX_TIME_STEP);
+  static const int NEVER_ACTIVATED;
+
+ private:
+  // non construction-copyable
+  DendriticSynapse(const DendriticSynapse& other) {}
+  DendriticSynapse& operator=(const DendriticSynapse& other) {  // non copyable
+    return *this;
+  }
 
   // Member variables
   bool m_isExc;

@@ -1984,7 +1984,8 @@ map<string, string> ParseStruct(const string& toParse) {
   vector<string> argList;
   if (idx != string::npos) {
     fnName = toParse.substr(0, idx);
-    argList = tokenize(toParse.substr(idx+1, toParse.size()-idx-2), ', ', "''\"\"[](){}");
+    argList = tokenize(toParse.substr(idx+1, toParse.size()-idx-2), ',',
+                       "''\"\"[](){}");
   } else {
     fnName = toParse;
   }
@@ -2397,7 +2398,7 @@ inline void RecordSynapticFiring(const int iFire, const string & FileName) {
     // and the second firing is a failure, this code will unfortunately
     // result in counting it as the proper firing.
     // This behavior is consistent with the behavior of the NeuroJet.
-    DendriticSynapse synapse = dendriticTree[c];
+    const DendriticSynapse& synapse = dendriticTree[c];
     if ((synapse.getLastActivate() - timeStep <= static_cast<int>(synapse.getSynapseType()->getNMDArise())) &&
         (zi[synapse.getSrcNeuron()]))
       OutFile << synapse.getWeight() << " " << synapse.getSrcNeuron() << " ";
@@ -2748,7 +2749,8 @@ void ReadPopulationFile(const string& filename, UIMatrix& effDelays) {
       vector<string> argList;
       if (idx != string::npos) {
         fnName = RHS.substr(0, idx);
-        argList = tokenize(RHS.substr(idx+1, RHS.size()-idx-2), ', ', "''\"\"[](){}");
+        argList = tokenize(RHS.substr(idx+1, RHS.size()-idx-2), ',',
+                           "''\"\"[](){}");
       } else {
         fnName = RHS;
       }

@@ -144,10 +144,10 @@ void SynapseType::setAlphaDecay() {
       // MEGHAN: If using Post Synaptic Rule B set alpha array to ("0" /
       //  "the old zBar") until peak, then decay normally
       if (m_learningRule == LRT_PostSynB) {
-	alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0] : 1.0f;
+        alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0] : 1.0f;
       } else {
-	alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0]
-	  + static_cast<double> (j) / m_NMDArise : 1.0f;
+        alphaRiseArray[i][j] = (j < m_NMDArise) ? alphaRiseArray[i][0]
+          + static_cast<double> (j) / m_NMDArise : 1.0f;
       }
     }
   }
@@ -158,7 +158,7 @@ void SynapseType::setAlphaDecay() {
   for (unsigned int i = 0; i < MAX_RES; i++) {
     for (unsigned int j = 0; j < m_NMDArise + 1; j++) {
       if (alphaRiseArray[i][j] > 1.0f) {
-	alphaRiseArray[i][j] = 1.0f;
+        alphaRiseArray[i][j] = 1.0f;
       }
     }
   }

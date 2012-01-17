@@ -1,5 +1,5 @@
 /***************************************************************************
- * Synapse.cpp
+ * DendriticSynapse.cpp
  *
  *  Copyright 2005, 2009, 2011 Informed Simplifications, LLC
  *  This file is part of NeuroJet.
@@ -21,8 +21,13 @@
 #if !defined(DENDRITICSYNAPSE_HPP)
 #   include "DendriticSynapse.hpp"
 #endif
+#if !defined(SYNAPSETYPE_HPP)
+#   include "SynapseType.hpp"
+#endif
 
 Noise DendriticSynapse::SynNoise;
+const int DendriticSynapse::NEVER_ACTIVATED =
+  -1 - static_cast<int>(SynapseType::MAX_TIME_STEP);
 
 // activate happens prior to ++timeStep
 void DendriticSynapse::activate(DataList &bus, DataList &bus_inhdiv,
@@ -43,14 +48,14 @@ void DendriticSynapse::activate(DataList &bus, DataList &bus_inhdiv,
     const unsigned int maxTimeStep = (m_synType->getMaxTimeStep());
     if (useMvgAvg) {
       const bool has_fired = (timeStep - m_lastActivate) <
-      static_cast<int>(SynapseType::MAX_TIME_STEP);
+        static_cast<int>(SynapseType::MAX_TIME_STEP);
       const float inv_alpha = 1 - m_synType->getAlpha();
       if (timeDiff < NMDArise) {
-        // Zeroth element is 0, first element is 1, 2nd element is alpha,
-        // nth element is alpha^(n-1)
         const float rise = m_synType->alphaRiseArray[m_oldZbar][timeDiff+1];
         m_mvgAvg = has_fired ? rise * m_mvgAvg + inv_alpha : inv_alpha;
       } else {
+        // Zeroth element is 0, first element is 1, 2nd element is alpha,
+        // nth element is alpha^(n-1)
         const float fall = m_synType->alphaFallArray[timeDiff+1-NMDArise];
         m_mvgAvg = has_fired ? fall * m_mvgAvg + inv_alpha : inv_alpha;
       }

@@ -1,5 +1,5 @@
 /***************************************************************************
- * Synapse.hpp
+ * AxonalSynapse.hpp
  *
  *  Copyright 2005, 2009, 2011 Informed Simplifications, LLC
  *  This file is part of NeuroJet.
