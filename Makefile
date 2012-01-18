@@ -15,20 +15,21 @@ MBLD := $(ROOT_DIR)/mpi.build
 DOC := $(ROOT_DIR)/doc
 XBLD := $(ROOT_DIR)/build.xcode
 VSBLD := $(ROOT_DIR)/build.vs
-COV_SRC_DIR := $(DBLD)/CMakeFiles/AllTests.dir/__/src
-COV_TEST_DIR := $(DBLD)/test/CMakeFiles/AllTests.dir/__/src
+SRC_SUBDIR := src/main/c++
+TEST_SUBDIR := src/test/c++
+COV_TEST_DIR := $(DBLD)/$(TEST_SUBDIR)/CMakeFiles/AllTests.dir/__/__/main/c++
 
 .PHONY: test clean xcode xcode2 vs
 
 compile:
 	if [ ! -d $(BLD) ]; then mkdir $(BLD); fi
 	(cd $(BLD); cmake $(CMAKE_FLAGS) ..; make)
-	rm -f NeuroJet; ln -s $(BLD)/src/NeuroJet NeuroJet
+	rm -f NeuroJet; ln -s $(BLD)/$(SRC_SUBDIR)/NeuroJet NeuroJet
 
 debug:
 	if [ ! -d $(DBLD) ]; then mkdir $(DBLD); fi
 	(cd $(DBLD); cmake -DDEBUG=true -DCMAKE_VERBOSE_MAKEFILE=true $(CMAKE_FLAGS) ..; make)
-	rm -f NeuroJet_d; ln -s $(DBLD)/src/NeuroJet NeuroJet_d
+	rm -f NeuroJet_d; ln -s $(DBLD)/$(SRC_SUBDIR)/NeuroJet NeuroJet_d
 
 mpi:
 	if [ ! -d $(MBLD) ]; then mkdir $(MBLD); fi
@@ -40,7 +41,7 @@ test: debug
 coverage: test
 	rm -rf $(DOC)
 	lcov --directory $(COV_TEST_DIR) --zerocounters
-	(cd $(DBLD)/test; ./AllTests;)
+	(cd $(DBLD)/$(TEST_SUBDIR); ./AllTests;)
 	lcov --directory $(COV_TEST_DIR) --capture --output-file $(COV_TEST_DIR)/app.info
 	# remove output for external libraries
 	lcov --remove $(COV_TEST_DIR)/app.info "/usr*" --output-file $(COV_TEST_DIR)/app.info

@@ -26,7 +26,7 @@ if(APPLE)
 endif()    
 
 cmake_minimum_required(VERSION 2.8)
-project(NeuroJet_parent)
+project(NeuroJet_root)
 
 # You must set GTEST_ROOT to the location of a directory containing an include and a lib directory,
 # with the include directory having gtest/gtest.h and the lib directory having libgtest.a (or similar)
@@ -64,7 +64,7 @@ endif()
 
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
 
-set(SRC_DIR ${NeuroJet_parent_SOURCE_DIR}/src)
+set(SRC_DIR ${NeuroJet_root_SOURCE_DIR}/src/main/c++)
 set(NEURAL_DIR ${SRC_DIR}/neural)
 set(UTILS_DIR ${SRC_DIR}/utils)
 set(SRC ${SRC_DIR}/ArgFuncts.cpp ${SRC_DIR}/Calc.cpp ${SRC_DIR}/NeuroJet.cpp
@@ -94,4 +94,3 @@ endif()
 enable_testing()
 
 add_subdirectory(src)
-add_subdirectory(test)

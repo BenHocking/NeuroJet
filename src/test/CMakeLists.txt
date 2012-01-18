@@ -18,5 +18,4 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 
-add_subdirectory(main)
-add_subdirectory(test)
+add_subdirectory(c++)

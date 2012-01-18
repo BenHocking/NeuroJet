@@ -18,5 +18,24 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 
-add_subdirectory(main)
-add_subdirectory(test)
+find_package(GTest REQUIRED)
+
+include_directories(${SRC_DIR} ${GTEST_INCLUDE_DIRS})
+
+set(FILES ${SRC} ${INCLUDES})
+set(TEST_DIR ${NeuroJet_root_SOURCE_DIR}/src/test/c++)
+
+enable_testing()
+
+# Unit tests
+# * Requires FindGTest.cmake
+# * Requires setting your GTEST_ROOT environment variable unless you're using another mechanism
+
+add_executable(AllTests ${TEST_DIR}/TestHarness.cpp ${FILES} ${TEST_DIR}/NoiseTest.cpp ${TEST_DIR}/StringTest.cpp
+			${TEST_DIR}/ArgFunctsTest.cpp
+			${TEST_DIR}/neural/InterneuronTest.cpp
+			${TEST_DIR}/neural/AxonalSynapseTest.cpp ${TEST_DIR}/neural/DendriticSynapseTest.cpp
+			${TEST_DIR}/neural/NeuronTypeTest.cpp ${TEST_DIR}/neural/SynapseTypeTest.cpp
+			${TEST_DIR}/utils/StringUtilsTest.cpp)
+target_link_libraries(AllTests ${GTEST_BOTH_LIBRARIES})
+add_test(AllTests AllTests)

@@ -1,7 +1,8 @@
-#  Copyright (c) 2012 Ben hocking
-#  All rights reserved.
+# Copyright (c) 2010-2012 Informed Simplifications, LLC
+# All rights reserved.
 #
-#  @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
+# @since Jan 27, 2010
+# @author <a href="mailto:benjaminhocking@gmail.com">Ashlie B. Hocking</a>
 #
 #  This file is part of NeuroJet.
 #
@@ -18,5 +19,11 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 
-add_subdirectory(main)
-add_subdirectory(test)
+project(NeuroJet CXX)
+
+include_directories(${NeuroJet_SOURCE_DIR})
+
+set(FILES ${SRC} ${INCLUDES})
+
+# Main executable
+add_executable(NeuroJet ${FILES} ${NeuroJet_SOURCE_DIR}/neurojet_driver.cpp)
