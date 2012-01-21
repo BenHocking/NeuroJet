@@ -91,6 +91,4 @@ if(MSVC OR ${CMAKE_GENERATOR} MATCHES "Xcode")
 	       ${UTILS_DIR}/StringUtils.hpp)
 endif()
 
-enable_testing()
-
 add_subdirectory(src)

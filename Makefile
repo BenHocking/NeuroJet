@@ -23,7 +23,7 @@ COV_TEST_DIR := $(DBLD)/$(TEST_SUBDIR)/CMakeFiles/AllTests.dir/__/__/main/c++
 
 compile:
 	if [ ! -d $(BLD) ]; then mkdir $(BLD); fi
-	(cd $(BLD); cmake $(CMAKE_FLAGS) ..; make)
+	(cd $(BLD); cmake $(CMAKE_FLAGS) -DSKIPTESTS=TRUE ..; make)
 	rm -f NeuroJet; ln -s $(BLD)/$(SRC_SUBDIR)/NeuroJet NeuroJet
 
 debug:

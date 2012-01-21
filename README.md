@@ -5,16 +5,20 @@ The goal of the NeuroJet project is a technology suitable for studying the biolo
 from the firing patterns of individual neurons to the cognition and behavior of individual organisms. NeuroJet is a neural network simulator initially designed for simulations of the mammalian
 hippocampus.
 
+Compiling
+=========
+
 In order to compile this code, you need to install gtest, and have the GTEST_ROOT environment variable point to its installation directory. It can be downloaded via SVN at
 http://googletest.googlecode.com/svn/trunk, via:
 
   svn co http://googletest.googlecode.com/svn/trunk gtest-svn
 
-Compiling
-=========
-
 Currently, there are many steps to compiling, and there might be some unknown dependencies with the test code. If you run into an error during compilation of the tests, check to see if
 build/src/NeuroJet (or build.xcode/src/Debug/NeuroJet, etc.) exists. That file should be enough to get you started.
+
+In order to run coverage, you will also need to install lcov and make sure it is in your path. For directions on installing lcov, see:
+
+  http://ltp.sourceforge.net/coverage/lcov/readme.php
 
 Authors
 -------
