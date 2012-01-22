@@ -19,7 +19,7 @@
 #  along with NeuroJet.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 
 add_subdirectory(main)
-if(NOT SKIPTESTS)
-  enable_testing()
+if(SKIPTESTS)
+else()
   add_subdirectory(test)
 endif()
