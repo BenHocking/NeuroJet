@@ -195,9 +195,22 @@ double matrixAvgSS(const vector<vector<T> > &Matrix) {
 }
 
 template <typename T>
+size_t matrixSize(const vector<vector<T> > &Matrix) {
+  const size_t size = Matrix.size() > 0 ? Matrix.size() * Matrix[0].size() : 0;
+  return size;
+}
+
+template <typename T>
 double matrixVar(const vector<vector<T> > &Matrix) {
   const double avg = matrixMean(Matrix);
-  return matrixAvgSS(Matrix) - avg * avg;
+  const size_t size = matrixSize(Matrix);
+  // Var = sum((x-mean(x))^2) / (n - 1)
+  // sum((x-mean(x))^2) = sum(x^2 - 2x*mean(x) + mean(x)^2)
+  //   = sum(x^2) - 2n*mean(x)^2 + n*mean(x)^2 = sum(x^2) + n * mean(x)^2
+  // matrixAvgSS returns sum(x^2) / n
+  // so n * (matrixAvgSS - mean(x)^2) = sum(x^2) + n * mean(x)^2
+  // Dividing that by (n - 1) should give variance
+  return (matrixAvgSS(Matrix) - avg * avg) * size / (size  - 1);
 }
 
 template <typename T>
