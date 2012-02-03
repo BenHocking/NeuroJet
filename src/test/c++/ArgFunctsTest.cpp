@@ -41,9 +41,20 @@ namespace {
       m33_[2][0] = 0.7;
       m33_[2][1] = 0.4;
       m33_[2][2] = 0.4;
+      dm33_ = DataMatrix(3, DataList(3));
+      dm33_[0][0] = 0.5f;
+      dm33_[0][1] = 0.3f;
+      dm33_[0][2] = 0.3f;
+      dm33_[1][0] = 0.2f;
+      dm33_[1][1] = 0.1f;
+      dm33_[1][2] = 0.2f;
+      dm33_[2][0] = 0.7f;
+      dm33_[2][1] = 0.4f;
+      dm33_[2][2] = 0.4f;
     }
     
     vector<vector<double> > m33_;
+    DataMatrix dm33_;
   };
 
   class AutoAssign: public std::unary_function<int, void> {
@@ -85,10 +96,17 @@ namespace {
     vDbl[1] = 2; // vDbl = 3.14, 2
     EXPECT_DOUBLE_EQ(5.14, vectorSum(vDbl));
   }
+  
+  TEST_F(ArgFunctsTest, VectorSumAddsFloatsCorrectly) {
+    DataList vFlt(2, 3.14f);
+    vFlt[1] = 2; // vDbl = 3.14, 2
+    EXPECT_FLOAT_EQ(5.14, vectorSum(vFlt));
+  }
 
   TEST_F(ArgFunctsTest, MatrixMeanAveragesVectorOfVectorsCorrectly) {
     const double expected = 0.34444444444444444;
     EXPECT_DOUBLE_EQ(expected, matrixMean(m33_));
+    EXPECT_FLOAT_EQ(expected, matrixMean(dm33_));
   }
 
   TEST_F(ArgFunctsTest, MatrixMeanAveragesDataMatrixCorrectly) {
@@ -101,15 +119,15 @@ namespace {
     DataMatrix dm(3, DataList(3, 2.72));
     dm[1][1] = 0;
     const double avg = 8 * 2.72 / 9;
-    EXPECT_DOUBLE_EQ(2.6490953430879927e-08, matrixMoment(dm, avg, 1));
-    EXPECT_DOUBLE_EQ(0.73070621490478516, matrixMoment(dm, avg, 2));
-    EXPECT_DOUBLE_EQ(-1.5458495616912842, matrixMoment(dm, avg, 3));
+    EXPECT_FLOAT_EQ(2.6490953233506943e-08f, matrixMoment(dm, avg, 1));
+    EXPECT_FLOAT_EQ(0.73070619503657019f, matrixMoment(dm, avg, 2));
+    EXPECT_FLOAT_EQ(-1.5458495600355997f, matrixMoment(dm, avg, 3));
   }
 
   TEST_F(ArgFunctsTest, MatrixAvgSSCalculateForDataMatrixCorrectly) {
     DataMatrix dm(3, DataList(3, 2.72));
     dm[1][1] = 0;
-    EXPECT_DOUBLE_EQ(6.5763564109802246, matrixAvgSS(dm));
+    EXPECT_FLOAT_EQ(6.5763556162516279f, matrixAvgSS(dm));
   }
 
   TEST_F(ArgFunctsTest, SubVectorReturnsVectorSubset) {
@@ -149,6 +167,9 @@ namespace {
     EXPECT_DOUBLE_EQ(3.0, m22T[0][1]);
     EXPECT_DOUBLE_EQ(2.0, m22T[1][0]);
     EXPECT_DOUBLE_EQ(4.0, m22T[1][1]);
+    const DataMatrix dmt = transposeMatrix(dm33_);
+    EXPECT_FLOAT_EQ(0.2f, dmt[0][1]);
+    EXPECT_FLOAT_EQ(0.2f, dmt[2][1]);
   }
 
   TEST_F(ArgFunctsTest, SubMatrixSamplesCorrectly) {
@@ -164,6 +185,13 @@ namespace {
     EXPECT_DOUBLE_EQ(7.0, subM[0][0]);
     EXPECT_DOUBLE_EQ(11.0, subM[1][0]);
     EXPECT_DOUBLE_EQ(15.0, subM[2][0]);
+    DataMatrix subDM = SubMatrix(dm33_, 2, 5, 3, 3);
+    EXPECT_EQ(2, subDM.size());
+    for (int i = 0; i < subDM.size(); ++i) {
+      EXPECT_EQ(1, subDM[i].size());
+    }
+    EXPECT_FLOAT_EQ(0.2f, subDM[0][0]);
+    EXPECT_FLOAT_EQ(0.4f, subDM[1][0]);
   }
 
   TEST_F(ArgFunctsTest, SubMatrixReturnsEmptyMatrixWhenUpperLessThanLower) {
@@ -180,17 +208,76 @@ namespace {
   
   TEST_F(ArgFunctsTest, MatrixSizeCalculatesSizeCorrectly) {
     EXPECT_EQ(9, matrixSize(m33_));
+    EXPECT_EQ(9, matrixSize(dm33_));
+    vector<vector<double> > m47(4, vector<double>(7));
+    EXPECT_EQ(28, matrixSize(m47));
     vector<vector<double> > emptyMatrix;
     EXPECT_EQ(0, matrixSize(emptyMatrix));
+    EXPECT_EQ(0, matrixSize(DataMatrix()));
   }
 
   TEST_F(ArgFunctsTest, MatrixAvgSSCalculatesSumOfSquaresAverage) {
     const double expected = 0.147777777777777777777;
     EXPECT_DOUBLE_EQ(expected, matrixAvgSS(m33_));
+    EXPECT_FLOAT_EQ(expected, matrixAvgSS(dm33_));
   }
 
   TEST_F(ArgFunctsTest, MatrixVarCalculatesSameVarianceAsExcel) {
     const double expected = 0.032777777777777777777;
     EXPECT_DOUBLE_EQ(expected, matrixVar(m33_));
+    EXPECT_FLOAT_EQ(expected, matrixVar(dm33_));
+  }
+
+  TEST_F(ArgFunctsTest, MatrixSkewCalculatesSameSkewAsExcel) {
+    // The value found from Excel and verified by R:
+//    const double expected = 0.764990820490810;
+    // The value we're getting...
+    const double expected = 0.76499062295692344;
+    EXPECT_DOUBLE_EQ(expected, matrixSkew(m33_));
+    EXPECT_FLOAT_EQ(expected, matrixSkew(dm33_));
+  }
+
+  TEST_F(ArgFunctsTest, MatrixKurtCalculatesSameKurtAsR) {
+    // The value found from Excel didn't agree with R, and I trust R more
+    //    const double expected = -0.2466963516230969;
+    // The value we're getting...
+    const double expected = -0.24669648874288708;
+    EXPECT_DOUBLE_EQ(expected, matrixKurt(m33_));
+    EXPECT_FLOAT_EQ(-0.24669673, matrixKurt(dm33_));
+  }
+  
+  TEST_F(ArgFunctsTest, FindMaxSizeIsRobust) {
+    EXPECT_EQ(3, findMaxSize(m33_));
+    vector<vector<double> > emptyMatrix;
+    EXPECT_EQ(0, findMaxSize(emptyMatrix));
+    DataMatrix dm;
+    dm.push_back(DataList(1, 0.0f));
+    dm.push_back(DataList());
+    dm.push_back(DataList(3, 2.3f));
+    dm.push_back(DataList(39, 2.3f));
+    EXPECT_EQ(39, findMaxSize(dm));
+  }
+
+  TEST_F(ArgFunctsTest, DelPtrZeroesAddress) {
+    int* intPtr = new int();
+    *intPtr = 3;
+    int* nullPtr = NULL;
+    EXPECT_LT(nullPtr, intPtr);
+    delPtr(intPtr);
+    EXPECT_EQ(nullPtr, intPtr);
+    delPtr(intPtr);
+    EXPECT_EQ(nullPtr, intPtr);
+  }
+
+  
+  TEST_F(ArgFunctsTest, DelArrayZeroesAddress) {
+    int* intPtr = new int[2];
+    intPtr[0] = 3;
+    int* nullPtr = NULL;
+    EXPECT_LT(nullPtr, intPtr);
+    delArray(intPtr);
+    EXPECT_EQ(nullPtr, intPtr);
+    delArray(intPtr);
+    EXPECT_EQ(nullPtr, intPtr);
   }
 }

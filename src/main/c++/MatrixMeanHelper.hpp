@@ -33,13 +33,13 @@ class MatrixMeanHelper: public std::unary_function<T, void> {
     numerator += accumulate(d.begin(), d.end(), T(0));
     denominator += d.size();
   }
-  double result() const {
-    return static_cast<double>(numerator) / denominator;
+  long double result() const {
+    return numerator / denominator;
   }
 
  private:
   size_t denominator;
-  T numerator;
+  long double numerator;
 };
 
 #endif  // MATRIXMEANHELPER

@@ -30,13 +30,14 @@ template <typename T>
 class MatrixMomentInnerHelper: public std::binary_function<T, T, T> {
  public:
   MatrixMomentInnerHelper(T a, double m): avg(a), moment(m) { }
-  const T operator() (const T& avgSoFar, const T& d) {
+  const long double operator() (const long double& avgSoFar,
+                                const long double& d) {
     return avgSoFar + pow(d - avg, moment);
   }
 
  private:
-  const T avg;
-  const double moment;
+  const long double avg;
+  const long double moment;
 };
 
 template <typename T>
@@ -49,15 +50,15 @@ class MatrixMomentHelper: public std::unary_function<T, void> {
                             MatrixMomentInnerHelper<T>(avg, moment));
     denominator += d.size();
   }
-  T result() const {
+  long double result() const {
     return numerator / denominator;
   }
 
  private:
   size_t denominator;
-  T numerator;
-  const T avg;
-  const double moment;
+  long double numerator;
+  const long double avg;
+  const long double moment;
 };
 
 #endif  // MATRIXMOMENTHELPER

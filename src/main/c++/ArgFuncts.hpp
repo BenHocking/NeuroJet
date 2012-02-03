@@ -216,15 +216,16 @@ double matrixVar(const vector<vector<T> > &Matrix) {
 template <typename T>
 double matrixSkew(const vector<vector<T> > &Matrix) {
   const double avg = matrixMean(Matrix);
-  const double var = matrixVar(Matrix);
+  const double var = matrixMoment(Matrix, avg, 2);
   const double moment3 = matrixMoment(Matrix, avg, 3);
-  return moment3 / pow(var, 1.5);
+  const size_t size = matrixSize(Matrix);
+  return (moment3 / pow(var, 1.5)) * sqrt(size * (size - 1)) / (size - 2);
 }
 
 template <typename T>
 double matrixKurt(const vector<vector<T> > &Matrix) {
   const double avg = matrixMean(Matrix);
-  const double var = matrixVar(Matrix);
+  const double var = matrixMoment(Matrix, avg, 2);
   const double moment4 = matrixMoment(Matrix, avg, 4);
   // The modern definition of kurtosis includes the "-3" term
   // Thus, a normal distribution has zero kurtosis

@@ -30,7 +30,8 @@ template <typename T>
 class MatrixSSInnerHelper: public std::binary_function<T, T, T> {
  public:
   MatrixSSInnerHelper() { }
-  const T operator() (const T& avgSoFar, const T& newVal) {
+  const long double operator() (const long double& avgSoFar,
+                                const long double& newVal) {
     return avgSoFar + (newVal * newVal);
   }
 };
@@ -43,13 +44,13 @@ class MatrixSSHelper: public std::unary_function<T, void> {
     numerator += accumulate(d.begin(), d.end(), T(0), MatrixSSInnerHelper<T>());
     denominator += d.size();
   }
-  T result() const {
+  long double result() const {
     return numerator / denominator;
   }
 
  private:
   size_t denominator;
-  T numerator;
+  long double numerator;
 };
 
 #endif  // MATRIXSSHELPER
